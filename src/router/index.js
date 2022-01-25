@@ -9,6 +9,7 @@ import Layout from '@/layout'
 /* Router Modules */
 import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
+import konvaRouter from './modules/konva'
 import tableRouter from './modules/table'
 import nestedRouter from './modules/nested'
 
@@ -187,6 +188,7 @@ export const asyncRoutes = [
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
   chartsRouter,
+  konvaRouter,
   nestedRouter,
   tableRouter,
 
