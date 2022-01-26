@@ -14,9 +14,9 @@ const konvaRouer = {
   children: [
     {
       path: 'keyboard',
-      component: () => import('@/views/konva/keyboard'),
-      name: 'KeyboardChart',
-      meta: { title: 'Keyboard Chart', noCache: true }
+      component: () => import('@/views/konva/group'),
+      name: 'konvaGroupUngroup',
+      meta: { title: 'Konva Group', noCache: true }
     },
     {
       path: 'line',
