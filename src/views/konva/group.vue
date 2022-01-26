@@ -2,8 +2,8 @@
   <div class="konva-canvas-container">
     <h3>konva.js实现组合、解除组合功能</h3>
     <el-row class="btn-group">
-      <el-button type="primary">组合</el-button>
-      <el-button type="primary">解除组合</el-button>
+      <el-button @click="groupShape" type="primary">组合</el-button>
+      <el-button @click="ungroupShape" type="primary">解除组合</el-button>
     </el-row>
     <div class="konva-group-content">
       <div id="konva-canvas-container"></div>
@@ -34,6 +34,9 @@ export default {
         width,
         height,
       });
+      this.stage.on('click', function(evt) {
+        console.log(evt);
+      })
     },
     // 初始化Konva.js this.layer
     initlayer() {
@@ -65,6 +68,7 @@ export default {
       this.layer.add(rect2);
 
       var tr = new Konva.Transformer();
+      this.tr = tr
       this.layer.add(tr);
 
       // by default select all shapes
@@ -122,7 +126,7 @@ export default {
           selectionRectangle.visible(false);
         });
 
-        var shapes = stage.find(".rect");
+        var shapes = _this.stage.find(".rect");
         var box = selectionRectangle.getClientRect();
         var selected = shapes.filter((shape) =>
           Konva.Util.haveIntersection(box, shape.getClientRect())
@@ -170,6 +174,21 @@ export default {
         }
       });
     },
+    // 组合 
+    groupShape() {
+      if(this.tr.nodes().length < 2) {
+        this. $message.error('至少需要2个图形才能组合！')
+        return
+      }
+      const group = new Konva.Group({ });
+      const nodes = this.tr.nodes()
+      group.add(...nodes);
+      this.layer.add(group)
+    },
+    // 解除组合 
+    ungroupShape() {
+      console.log(this.stage);
+    }
   },
 };
 </script>
