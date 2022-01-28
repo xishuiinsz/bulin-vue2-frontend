@@ -19,7 +19,7 @@ export default {
   mounted() {
     this.initStage();
     this.initlayer();
-    this.drawShape()
+    this.drawShape();
   },
   methods: {
     // 初始化konva stage
@@ -34,9 +34,9 @@ export default {
         width,
         height,
       });
-      this.stage.on('click', function(evt) {
+      this.stage.on("click", function (evt) {
         console.log(evt);
-      })
+      });
     },
     // 初始化Konva.js this.layer
     initlayer() {
@@ -68,7 +68,7 @@ export default {
       this.layer.add(rect2);
 
       var tr = new Konva.Transformer();
-      this.tr = tr
+      this.tr = tr;
       this.layer.add(tr);
 
       // by default select all shapes
@@ -80,7 +80,7 @@ export default {
         visible: false,
       });
       this.layer.add(selectionRectangle);
-      const _this = this
+      const _this = this;
       var x1, y1, x2, y2;
       this.stage.on("mousedown touchstart", (e) => {
         // do nothing if we mousedown on any shape
@@ -174,21 +174,21 @@ export default {
         }
       });
     },
-    // 组合 
+    // 组合
     groupShape() {
-      if(this.tr.nodes().length < 2) {
-        this. $message.error('至少需要2个图形才能组合！')
-        return
+      if (this.tr.nodes().length < 2) {
+        this.$message.error("至少需要2个图形才能组合！");
+        return;
       }
-      const group = new Konva.Group({ });
-      const nodes = this.tr.nodes()
+      const group = new Konva.Group({});
+      const nodes = this.tr.nodes();
       group.add(...nodes);
-      this.layer.add(group)
+      this.layer.add(group);
     },
-    // 解除组合 
+    // 解除组合
     ungroupShape() {
       console.log(this.stage);
-    }
+    },
   },
 };
 </script>
