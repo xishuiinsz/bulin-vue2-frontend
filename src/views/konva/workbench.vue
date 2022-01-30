@@ -1,35 +1,39 @@
 <template>
-  <div class="konva-workbench-container">
-    <v-stage ref="stage" :config="stageSize" class="konva-stage-container">
-      <v-layer>
-        <template v-for="item in shapesList">
-          <v-text v-if="item.type === 'text'" :key="item.id" :config="item" />
-          <v-rect v-if="item.type === 'rect'" :key="item.id" :config="item" />
-          <v-circle
-            v-if="item.type === 'circle'"
-            :key="item.id"
-            :config="item"
-          />
-          <v-line v-if="item.type === 'line'" :key="item.id" :config="item" />
-        </template>
-      </v-layer>
-      <v-layer ref="dragLayer"></v-layer>
-    </v-stage>
-  </div>
+  <v-stage
+    ref="stage"
+    :config="stageSize"
+    @mousedown="handleStageMouseDown"
+    @touchstart="handleStageMouseDown"
+  >
+    <v-layer ref="layer">
+      <template v-for="item in rectangles">
+        <v-text v-if="item.type === 'text'" :key="item.id" :config="item" />
+        <v-rect v-if="item.type === 'rect'" :key="item.id" :config="item" />
+        <v-circle v-if="item.type === 'circle'" :key="item.id" :config="item" />
+        <v-line v-if="item.type === 'line'" :key="item.id" :config="item" />
+      </template>
+      <v-transformer @transformend="handleTransformEnd" ref="transformer" />
+    </v-layer>
+  </v-stage>
 </template>
 
 <script>
+import Konva from 'konva'
+const width = window.innerWidth
+const height = window.innerHeight
+
 export default {
-  name: 'Workbench',
   data() {
     return {
       stageSize: {
-        width: 0,
-        height: 0
+        width: width,
+        height: height
       },
-      shapesList: [
+      rectangles: [
         {
           id: '1',
+          x: 30,
+          y: 30,
           text: 'Some text on canvas',
           fontSize: 15,
           type: 'text',
@@ -37,18 +41,35 @@ export default {
         },
         {
           id: '2',
-          x: 20,
-          y: 50,
-          width: 100,
-          height: 100,
+          rotation: 0,
+          x: 310,
+          y: 340,
+          width: 120,
+          height: 120,
+          scaleX: 1,
+          scaleY: 1,
           fill: 'red',
-          shadowBlur: 10,
-          type: 'rect',
-          draggable: true
+          name: 'rect1',
+          draggable: true,
+          type: 'rect'
         },
         {
           id: '3',
-          x: 200,
+          rotation: 0,
+          x: 250,
+          y: 250,
+          width: 100,
+          height: 100,
+          scaleX: 1,
+          scaleY: 1,
+          fill: 'green',
+          name: 'rect2',
+          draggable: true,
+          type: 'rect'
+        },
+        {
+          id: '4',
+          x: 250,
           y: 100,
           radius: 50,
           fill: 'green',
@@ -56,7 +77,7 @@ export default {
           draggable: true
         },
         {
-          id: '4',
+          id: '5',
           x: 20,
           y: 200,
           points: [0, 0, 100, 0, 100, 100],
@@ -69,24 +90,70 @@ export default {
           type: 'line',
           draggable: true
         }
-      ]
+      ],
+      selectedShapeName: ''
     }
   },
-  mounted() {
-    this.initStage()
-  },
   methods: {
-    initStage() {
-      const width = this.$el.offsetWidth
-      const height = this.$el.offsetHeight
-      this.stageSize = { width, height }
+    handleTransformEnd(e) {
+      // shape is transformed, let us save new attrs back to the node
+      // find element in our state
+      const rect = this.rectangles.find(r => r.name === this.selectedShapeName)
+      // update the state
+      rect.x = e.target.x()
+      rect.y = e.target.y()
+      rect.rotation = e.target.rotation()
+      rect.scaleX = e.target.scaleX()
+      rect.scaleY = e.target.scaleY()
+
+      // change fill
+      rect.fill = Konva.Util.getRandomColor()
+    },
+    handleStageMouseDown(e) {
+      // clicked on stage - clear selection
+      if (e.target === e.target.getStage()) {
+        this.selectedShapeName = ''
+        this.updateTransformer()
+        return
+      }
+
+      // clicked on transformer - do nothing
+      const clickedOnTransformer =
+        e.target.getParent().className === 'Transformer'
+      if (clickedOnTransformer) {
+        return
+      }
+
+      // find clicked rect by its name
+      const name = e.target.name()
+      const rect = this.rectangles.find(r => r.name === name)
+      if (rect) {
+        this.selectedShapeName = name
+      } else {
+        this.selectedShapeName = ''
+      }
+      this.updateTransformer()
+    },
+    updateTransformer() {
+      // here we need to manually attach or detach Transformer node
+      const transformerNode = this.$refs.transformer.getNode()
+      const stage = transformerNode.getStage()
+      const { selectedShapeName } = this
+
+      const selectedNode = stage.findOne('.' + selectedShapeName)
+      // do nothing if selected node is already attached
+      if (selectedNode === transformerNode.node()) {
+        return
+      }
+
+      if (selectedNode) {
+        // attach to another node
+        transformerNode.nodes([selectedNode])
+      } else {
+        // remove transformer
+        transformerNode.nodes([])
+      }
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-.konva-workbench-container {
-  min-height: calc(100vh - 84px);
-  background-color: #f5f7fa;
-}
-</style>
