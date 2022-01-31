@@ -6,12 +6,7 @@
     @touchstart="handleStageMouseDown"
   >
     <v-layer ref="layer">
-      <template v-for="item in rectangles">
-        <v-text v-if="item.type === 'text'" :key="item.id" :config="item" />
-        <v-rect v-if="item.type === 'rect'" :key="item.id" :config="item" />
-        <v-circle v-if="item.type === 'circle'" :key="item.id" :config="item" />
-        <v-line v-if="item.type === 'line'" :key="item.id" :config="item" />
-      </template>
+      <workspace :eleList="rectangles"> </workspace>
       <v-transformer @transformend="handleTransformEnd" ref="transformer" />
     </v-layer>
   </v-stage>
@@ -19,10 +14,13 @@
 
 <script>
 import Konva from 'konva'
+import workspace from './workspace'
 const width = window.innerWidth
 const height = window.innerHeight
-
 export default {
+  components: {
+    workspace
+  },
   data() {
     return {
       stageSize: {
@@ -89,6 +87,34 @@ export default {
           fillLinearGradientColorStops: [0, 'red', 1, 'yellow'],
           type: 'line',
           draggable: true
+        },
+        {
+          id: '6',
+          type: 'group',
+          draggable: true,
+          children: [
+            {
+              id: '7',
+              rotation: 0,
+              x: 350,
+              y: 250,
+              width: 100,
+              height: 100,
+              scaleX: 1,
+              scaleY: 1,
+              fill: 'green',
+              name: 'rect2',
+              type: 'rect'
+            },
+            {
+              id: '8',
+              x: 450,
+              y: 100,
+              radius: 50,
+              fill: 'green',
+              type: 'circle'
+            }
+          ]
         }
       ],
       selectedShapeName: ''
