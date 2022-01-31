@@ -1,22 +1,27 @@
 <template>
-  <v-stage
-    ref="stage"
-    :config="stageSize"
-    @mousedown="handleStageMouseDown"
-    @touchstart="handleStageMouseDown"
-  >
-    <v-layer ref="layer">
-      <workspace :eleList="rectangles"> </workspace>
-      <v-transformer @transformend="handleTransformEnd" ref="transformer" />
-    </v-layer>
-  </v-stage>
+  <div class="konva-workbench-container">
+    <div class="btn-group">
+      <el-button type="primary">组合</el-button>
+      <el-button>取消组合</el-button>
+    </div>
+    <v-stage
+      ref="stage"
+      :config="stageSize"
+      @mousedown="handleStageMouseDown"
+      @touchstart="handleStageMouseDown"
+      class="konva-stage-container"
+    >
+      <v-layer ref="layer">
+        <workspace :eleList="rectangles"> </workspace>
+        <v-transformer @transformend="handleTransformEnd" ref="transformer" />
+      </v-layer>
+    </v-stage>
+  </div>
 </template>
 
 <script>
-import Konva from 'konva'
+// import Konva from 'konva'
 import workspace from './workspace'
-const width = window.innerWidth
-const height = window.innerHeight
 export default {
   components: {
     workspace
@@ -24,8 +29,8 @@ export default {
   data() {
     return {
       stageSize: {
-        width: width,
-        height: height
+        width: 0,
+        height: 0
       },
       rectangles: [
         {
@@ -33,6 +38,7 @@ export default {
           x: 30,
           y: 30,
           text: 'Some text on canvas',
+          name: 'text1',
           fontSize: 15,
           type: 'text',
           draggable: true
@@ -124,8 +130,19 @@ export default {
       selectedShapeName: ''
     }
   },
-  mounted() {},
+  mounted() {
+    this.initStage()
+  },
   methods: {
+    // 初始化konva stage
+    initStage() {
+      const konvaGroupContainer = this.$el.querySelector(
+        '.konva-stage-container'
+      )
+      const width = konvaGroupContainer.offsetWidth
+      const height = konvaGroupContainer.offsetHeight
+      this.stageSize = { width, height }
+    },
     handleTransformEnd(e) {
       // shape is transformed, let us save new attrs back to the node
       // find element in our state
@@ -138,7 +155,7 @@ export default {
       rect.scaleY = e.target.scaleY()
 
       // change fill
-      rect.fill = Konva.Util.getRandomColor()
+      // rect.fill = Konva.Util.getRandomColor()
     },
     handleStageMouseDown(e) {
       // clicked on stage - clear selection
@@ -195,3 +212,16 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+.konva-workbench-container {
+  width: 100%;
+  height: calc(100vh - 84px);
+  overflow: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  .konva-stage-container {
+    flex: 1;
+  }
+}
+</style>
