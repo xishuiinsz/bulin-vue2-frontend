@@ -72,6 +72,7 @@ export default {
           radius: 50,
           fill: 'green',
           type: 'circle',
+          name: 'circle1',
           draggable: true
         },
         {
@@ -86,12 +87,14 @@ export default {
           fillLinearGradientEndPoint: { x: 50, y: 50 },
           fillLinearGradientColorStops: [0, 'red', 1, 'yellow'],
           type: 'line',
+          name: 'line1',
           draggable: true
         },
         {
           id: '6',
           type: 'group',
           draggable: true,
+          name: 'group1',
           children: [
             {
               id: '7',
@@ -112,7 +115,8 @@ export default {
               y: 100,
               radius: 50,
               fill: 'green',
-              type: 'circle'
+              type: 'circle',
+              name: 'circle8'
             }
           ]
         }
@@ -120,6 +124,7 @@ export default {
       selectedShapeName: ''
     }
   },
+  mounted() {},
   methods: {
     handleTransformEnd(e) {
       // shape is transformed, let us save new attrs back to the node
@@ -147,6 +152,13 @@ export default {
       const clickedOnTransformer =
         e.target.getParent().className === 'Transformer'
       if (clickedOnTransformer) {
+        return
+      }
+
+      // clicked on group
+      if (e.target.getParent().nodeType === 'Group') {
+        this.selectedShapeName = e.target.getParent().name()
+        this.updateTransformer()
         return
       }
 
