@@ -222,7 +222,11 @@ export default {
       if (selecedShape.nodeType === 'Group') {
         const { id } = selecedShape.attrs
         const index = this.shapesList.findIndex(shape => shape.id === id)
-        this.shapesList.splice(index, 1)
+        const [spliceEle] = this.shapesList.splice(index, 1)
+        spliceEle.children.forEach(ele =>
+          Object.assign(ele, { draggable: true })
+        )
+        this.shapesList.push(...spliceEle.children)
       } else {
         this.$message.warning('请选择组合元素！')
       }
