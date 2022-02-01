@@ -2,7 +2,7 @@
   <div class="konva-workbench-container">
     <div class="btn-group">
       <el-button type="primary">组合</el-button>
-      <el-button>取消组合</el-button>
+      <el-button @click="ungroup">取消组合</el-button>
     </div>
     <v-stage
       ref="stage"
@@ -12,7 +12,7 @@
       class="konva-stage-container"
     >
       <v-layer ref="layer">
-        <workspace :eleList="rectangles"> </workspace>
+        <workspace :eleList="shapesList"> </workspace>
         <v-transformer @transformend="handleTransformEnd" ref="transformer" />
       </v-layer>
     </v-stage>
@@ -28,11 +28,12 @@ export default {
   },
   data() {
     return {
+      key: 0,
       stageSize: {
         width: 0,
         height: 0
       },
-      rectangles: [
+      shapesList: [
         {
           id: '1',
           x: 30,
@@ -146,7 +147,7 @@ export default {
     handleTransformEnd(e) {
       // shape is transformed, let us save new attrs back to the node
       // find element in our state
-      const rect = this.rectangles.find(r => r.name === this.selectedShapeName)
+      const rect = this.shapesList.find(r => r.name === this.selectedShapeName)
       // update the state
       rect.x = e.target.x()
       rect.y = e.target.y()
@@ -181,7 +182,7 @@ export default {
 
       // find clicked rect by its name
       const name = e.target.name()
-      const rect = this.rectangles.find(r => r.name === name)
+      const rect = this.shapesList.find(r => r.name === name)
       if (rect) {
         this.selectedShapeName = name
       } else {
@@ -204,9 +205,26 @@ export default {
       if (selectedNode) {
         // attach to another node
         transformerNode.nodes([selectedNode])
+        transformerNode.moveToTop()
       } else {
         // remove transformer
         transformerNode.nodes([])
+      }
+    },
+    // 取消组合
+    ungroup() {
+      const nodes = this.$refs.transformer.getNode().nodes()
+      if (!nodes.length) {
+        this.$message.warning('请选择组合元素！')
+        return
+      }
+      const [selecedShape] = nodes
+      if (selecedShape.nodeType === 'Group') {
+        const { id } = selecedShape.attrs
+        const index = this.shapesList.findIndex(shape => shape.id === id)
+        this.shapesList.splice(index, 1)
+      } else {
+        this.$message.warning('请选择组合元素！')
       }
     }
   }
