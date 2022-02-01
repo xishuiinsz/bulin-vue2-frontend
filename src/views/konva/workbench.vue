@@ -113,7 +113,7 @@ export default {
               scaleX: 1,
               scaleY: 1,
               fill: 'green',
-              name: 'rect2',
+              name: 'rect21',
               type: 'rect'
             },
             {
@@ -220,11 +220,17 @@ export default {
       }
       const [selecedShape] = nodes
       if (selecedShape.nodeType === 'Group') {
-        const { id } = selecedShape.attrs
+        const { id, x, y } = selecedShape.attrs
         const index = this.shapesList.findIndex(shape => shape.id === id)
         const [spliceEle] = this.shapesList.splice(index, 1)
         spliceEle.children.forEach(ele =>
-          Object.assign(ele, { draggable: true })
+          Object.assign(ele, {
+            draggable: true,
+            x: ele.x + x,
+            y: ele.y + y
+            // scaleX,
+            // scaleY
+          })
         )
         this.shapesList.push(...spliceEle.children)
       } else {
