@@ -15,7 +15,7 @@
     >
       <v-layer ref="layer">
         <workspace :eleList="shapesList"> </workspace>
-        <v-rect :config="selectionRect" />
+        <v-rect :config="selectionRect" ref="selectionRect" />
         <v-transformer @transformend="handleTransformEnd" ref="transformer" />
       </v-layer>
     </v-stage>
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-// import Konva from 'konva'
+import Konva from 'konva'
 import workspace from './workspace'
 export default {
   components: {
@@ -37,7 +37,8 @@ export default {
         height: 0
       },
       selectionRect: {
-        visible: false
+        visible: false,
+        name: 'selectionRect'
       }, // 矩形选择框
       shapesList: [
         {
@@ -222,13 +223,23 @@ export default {
       }
     },
     handleStageMouseUp(e) {
-      this.flagMouseDown = false
-      setTimeout(() => {
-        this.selectionRect = {
-          visible: false
-        }
-      })
-      console.log(e.target.getStage())
+      if (this.flagMouseDown) {
+        this.flagMouseDown = false
+        setTimeout(() => {
+          this.selectionRect = {
+            visible: false
+          }
+        })
+        const stage = e.target.getStage()
+        const ids = this.shapesList.map(item => item.id)
+        const shapes = stage.find(item => ids.includes(item.attrs.id))
+        const box = this.$refs.selectionRect.getNode().getClientRect()
+        const selected = shapes.filter(shape =>
+          Konva.Util.haveIntersection(box, shape.getClientRect())
+        )
+        const transformerNode = this.$refs.transformer.getNode()
+        transformerNode.nodes(selected)
+      }
     },
     updateTransformer() {
       // here we need to manually attach or detach Transformer node
