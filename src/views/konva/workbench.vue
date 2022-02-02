@@ -288,7 +288,30 @@ export default {
         this.$message.warning('请选择组合元素！')
       }
     },
-    gruop() {}
+    // 组合
+    gruop() {
+      const transformerNode = this.$refs.transformer.getNode()
+      const transformerShapes = transformerNode.nodes()
+      if (transformerShapes.length < 2) {
+        this.$message.warning('至少选择2个元素！')
+        return
+      }
+      const spliceItems = []
+      transformerShapes.forEach(shape => {
+        const { id } = shape.attrs
+        const index = this.shapesList.findIndex(item => item.id === id)
+        const spliceItem = this.shapesList.splice(index, 1)
+        spliceItems.push(Object.assign(...spliceItem, { draggable: false }))
+      })
+      const group = {
+        id: '' + new Date().getTime(),
+        type: 'group',
+        draggable: true,
+        name: 'group' + new Date().getTime(),
+        children: spliceItems
+      }
+      this.shapesList.push(group)
+    }
   }
 }
 </script>
