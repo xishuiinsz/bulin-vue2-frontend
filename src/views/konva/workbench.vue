@@ -1,18 +1,21 @@
 <template>
   <div class="konva-workbench-container">
     <div class="btn-group">
-      <el-button type="primary">组合</el-button>
+      <el-button @click="gruop" type="primary">组合</el-button>
       <el-button @click="ungroup">取消组合</el-button>
     </div>
     <v-stage
       ref="stage"
       :config="stageSize"
       @mousedown="handleStageMouseDown"
+      @mousemove="handleStageMouseMove"
+      @mouseup="handleStageMouseUp"
       @touchstart="handleStageMouseDown"
       class="konva-stage-container"
     >
       <v-layer ref="layer">
         <workspace :eleList="shapesList"> </workspace>
+        <v-rect :config="selectionRect" />
         <v-transformer @transformend="handleTransformEnd" ref="transformer" />
       </v-layer>
     </v-stage>
@@ -33,6 +36,9 @@ export default {
         width: 0,
         height: 0
       },
+      selectionRect: {
+        visible: false
+      }, // 矩形选择框
       shapesList: [
         {
           id: '1',
@@ -163,6 +169,16 @@ export default {
       if (e.target === e.target.getStage()) {
         this.selectedShapeName = ''
         this.updateTransformer()
+        this.selectionRect = {
+          visible: true,
+          width: 0,
+          height: 0
+        }
+        this.flagMouseDown = true
+        this.x1 = e.target.getPointerPosition().x
+        this.y1 = e.target.getPointerPosition().y
+        this.x2 = e.target.getPointerPosition().x
+        this.y2 = e.target.getPointerPosition().y
         return
       }
 
@@ -189,6 +205,30 @@ export default {
         this.selectedShapeName = ''
       }
       this.updateTransformer()
+    },
+    handleStageMouseMove(e) {
+      if (this.flagMouseDown) {
+        const stage = this.$refs.stage.getNode()
+        this.x2 = stage.getPointerPosition().x
+        this.y2 = stage.getPointerPosition().y
+        this.selectionRect = {
+          x: Math.min(this.x1, this.x2),
+          y: Math.min(this.y1, this.y2),
+          width: Math.abs(this.x2 - this.x1),
+          height: Math.abs(this.y2 - this.y1),
+          fill: 'rgba(0,0,255,0.5)',
+          visible: true
+        }
+      }
+    },
+    handleStageMouseUp(e) {
+      this.flagMouseDown = false
+      setTimeout(() => {
+        this.selectionRect = {
+          visible: false
+        }
+      })
+      console.log(e.target.getStage())
     },
     updateTransformer() {
       // here we need to manually attach or detach Transformer node
@@ -236,7 +276,8 @@ export default {
       } else {
         this.$message.warning('请选择组合元素！')
       }
-    }
+    },
+    gruop() {}
   }
 }
 </script>
