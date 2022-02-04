@@ -3,6 +3,7 @@
     <div class="btn-group">
       <el-button @click="gruop" type="primary">组合</el-button>
       <el-button @click="ungroup">取消组合</el-button>
+      <el-button @click="changeBgStyle" type="primary">改变背景</el-button>
     </div>
     <v-stage
       ref="stage"
@@ -154,16 +155,16 @@ export default {
     handleTransformEnd(e) {
       // shape is transformed, let us save new attrs back to the node
       // find element in our state
-      const rect = this.shapesList.find(r => r.name === this.selectedShapeName)
+      const shape = this.shapesList.find(r => r.name === this.selectedShapeName)
       // update the state
-      rect.x = e.target.x()
-      rect.y = e.target.y()
-      rect.rotation = e.target.rotation()
-      rect.scaleX = e.target.scaleX()
-      rect.scaleY = e.target.scaleY()
+      shape.x = e.target.x()
+      shape.y = e.target.y()
+      shape.rotation = e.target.rotation()
+      shape.scaleX = e.target.scaleX()
+      shape.scaleY = e.target.scaleY()
 
       // change fill
-      // rect.fill = Konva.Util.getRandomColor()
+      // shape.fill = Konva.Util.getRandomColor()
     },
     handleStageMouseDown(e) {
       // clicked on stage - clear selection
@@ -311,7 +312,9 @@ export default {
         children: spliceItems
       }
       this.shapesList.push(group)
-    }
+    },
+    // 改变背景
+    changeBgStyle() {}
   }
 }
 </script>
