@@ -1,0 +1,19 @@
+{
+  "name": "apiService",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "xishuiofchina@163.com",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "lowdb": "1.0.0",
+    "nanoid": "^3.2.0"
+  }
+}
