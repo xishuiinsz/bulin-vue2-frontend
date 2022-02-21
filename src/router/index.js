@@ -171,7 +171,30 @@ export const asyncRoutes = [
       }
     ]
   },
-
+  {
+    path: '/specialTopic',
+    component: Layout,
+    redirect: '/specialTopic/imgClip',
+    name: 'SpecialTopic',
+    meta: {
+      title: 'Special Topic',
+      icon: 'el-icon-s-help'
+    },
+    children: [
+      {
+        path: 'imgClip',
+        component: () => import('@/specialTopic/imgClip'),
+        name: 'ImgClip',
+        meta: { title: 'image clip Case', icon: 'edit' }
+      },
+      {
+        path: 'todoItem',
+        component: () => import('@/specialTopic/todoItem'),
+        name: 'TodoItem',
+        meta: { title: 'Todo Item', icon: 'edit' }
+      }
+    ]
+  },
   {
     path: '/icon',
     component: Layout,
@@ -212,7 +235,11 @@ export const asyncRoutes = [
         path: 'edit/:id(\\d+)',
         component: () => import('@/views/example/edit'),
         name: 'EditArticle',
-        meta: { title: 'Edit Article', noCache: true, activeMenu: '/example/list' },
+        meta: {
+          title: 'Edit Article',
+          noCache: true,
+          activeMenu: '/example/list'
+        },
         hidden: true
       },
       {
@@ -379,7 +406,7 @@ export const asyncRoutes = [
     component: Layout,
     children: [
       {
-        path: 'https://github.com/PanJiaChen/vue-element-admin',
+        path: 'https://www.baidu.com/',
         meta: { title: 'External Link', icon: 'link' }
       }
     ]
@@ -389,11 +416,12 @@ export const asyncRoutes = [
   { path: '*', redirect: '/404', hidden: true }
 ]
 
-const createRouter = () => new Router({
-  // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
-})
+const createRouter = () =>
+  new Router({
+    // mode: 'history', // require service support
+    scrollBehavior: () => ({ y: 0 }),
+    routes: constantRoutes
+  })
 
 const router = createRouter()
 
