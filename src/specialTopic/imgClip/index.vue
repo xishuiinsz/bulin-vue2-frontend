@@ -11,14 +11,17 @@
       >
         <el-button size="small" type="primary"> 上传图片 </el-button>
       </el-upload>
-      <el-button size="small" type="primary"> 裁剪框 </el-button>
+      <el-button @click="switchShowClipBox" size="small" type="primary">
+        裁剪框
+      </el-button>
     </div>
 
     <div class="canvas-outer-container">
       <div class="canvas-inner-container">
         <v-stage ref="stage" :config="stageSize">
-          <v-layer ref="layer" :config="layerConfig">
+          <v-layer ref="layerMainImage" :config="layerConfig">
             <v-image :config="imageMainOption" />
+            <v-rect v-if="isShowClipBox" :config="configRect" />
           </v-layer>
         </v-stage>
       </div>
@@ -27,6 +30,7 @@
 </template>
 <script>
 export default {
+  name: 'ImgClip',
   data() {
     return {
       stageSize: {
@@ -37,6 +41,21 @@ export default {
         scaleX: 1,
         scaleY: 1
       },
+      configClip: {
+        width: 200,
+        height: 300
+      },
+      scaleRate: 100,
+      configRect: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        stroke: 'green',
+        strokeWidth: 1,
+        draggable: true
+      },
+      isShowClipBox: false,
       imageMainOption: {
         image: null,
         draggable: true,
@@ -96,6 +115,13 @@ export default {
           _this.imageMainOption.height = img.height
         }
         _this.imageMainOption.image = img
+        _this.configRect.x = _this.imageMainOption.x
+        _this.configRect.y = _this.imageMainOption.y
+        _this.configRect.width = _this.imageMainOption.width
+        _this.configRect.height = _this.imageMainOption.height
+        _this.configconfigRectCopy = JSON.parse(
+          JSON.stringify(_this.configRect)
+        )
       }
       img.src = file
     },
@@ -104,11 +130,30 @@ export default {
         width: 0,
         height: 0
       }
+    },
+    switchShowClipBox() {
+      this.isShowClipBox = !this.isShowClipBox
+    },
+    lmiMouseWheelHandler(e) {
+      this.scaleRate += e.wheelDelta / 10
+      this.layerConfig.scaleX = this.scaleRate / 100
+      this.layerConfig.scaleY = this.scaleRate / 100
+      const { scaleX } = this.layerConfig
+      this.configRect = {
+        x: this.configconfigRectCopy.x / scaleX,
+        y: this.configconfigRectCopy.y / scaleX,
+        width: this.configconfigRectCopy.width / scaleX,
+        height: this.configconfigRectCopy.height / scaleX,
+        stroke: 'green',
+        strokeWidth: this.configconfigRectCopy.strokeWidth / scaleX,
+        draggable: true
+      }
     }
   },
   mounted() {
     this.initCanvas()
     window.addEventListener('resize', this.resize)
+    window.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
   }
 }
 </script>
