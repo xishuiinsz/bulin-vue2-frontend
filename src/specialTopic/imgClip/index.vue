@@ -1,6 +1,13 @@
 <template>
   <div class="img-clip-general-container">
     <div class="operation-area">
+      <el-input-number
+        v-model="scaleRate"
+        :precision="2"
+        :step="1"
+        :max="500"
+        :min="10"
+      ></el-input-number>
       <el-upload
         :multiple="false"
         :show-file-list="false"
@@ -11,9 +18,14 @@
       >
         <el-button size="small" type="primary"> 上传图片 </el-button>
       </el-upload>
-      <el-button @click="switchShowClipBox" size="small" type="primary">
-        裁剪框
-      </el-button>
+      <el-button-group>
+        <el-button @click="switchShowClipBox" size="small" type="primary">
+          裁剪框
+        </el-button>
+        <el-button @click="confirmClipAction" size="small" type="primary">
+          开始裁剪
+        </el-button>
+      </el-button-group>
     </div>
 
     <div class="canvas-outer-container">
@@ -38,8 +50,7 @@ export default {
         height: 0
       },
       layerConfig: {
-        scaleX: 1,
-        scaleY: 1
+        clip: {}
       },
       configClip: {
         width: 200,
@@ -61,6 +72,8 @@ export default {
         draggable: true,
         x: 100,
         y: 100,
+        scaleX: 1,
+        scaleY: 1,
         width: 0,
         height: 0
       }
@@ -115,13 +128,6 @@ export default {
           _this.imageMainOption.height = img.height
         }
         _this.imageMainOption.image = img
-        _this.configRect.x = _this.imageMainOption.x
-        _this.configRect.y = _this.imageMainOption.y
-        _this.configRect.width = _this.imageMainOption.width
-        _this.configRect.height = _this.imageMainOption.height
-        _this.configconfigRectCopy = JSON.parse(
-          JSON.stringify(_this.configRect)
-        )
       }
       img.src = file
     },
@@ -132,21 +138,32 @@ export default {
       }
     },
     switchShowClipBox() {
+      if (!this.isShowClipBox) {
+        if (!this.imageMainOption.image) {
+          this.$message.error('请先上传图片！')
+          return
+        }
+        this.configRect.x = this.imageMainOption.x
+        this.configRect.y = this.imageMainOption.y
+        this.configRect.width = this.imageMainOption.width
+        this.configRect.height = this.imageMainOption.height
+      }
       this.isShowClipBox = !this.isShowClipBox
     },
     lmiMouseWheelHandler(e) {
       this.scaleRate += e.wheelDelta / 10
-      this.layerConfig.scaleX = this.scaleRate / 100
-      this.layerConfig.scaleY = this.scaleRate / 100
-      const { scaleX } = this.layerConfig
-      this.configRect = {
-        x: this.configconfigRectCopy.x / scaleX,
-        y: this.configconfigRectCopy.y / scaleX,
-        width: this.configconfigRectCopy.width / scaleX,
-        height: this.configconfigRectCopy.height / scaleX,
-        stroke: 'green',
-        strokeWidth: this.configconfigRectCopy.strokeWidth / scaleX,
-        draggable: true
+      this.imageMainOption.scaleX = this.scaleRate / 100
+      this.imageMainOption.scaleY = this.scaleRate / 100
+    },
+    // 开始裁剪
+    confirmClipAction() {
+      this.layerConfig.clip = {}
+      const { x, y, width, height } = this.configRect
+      this.layerConfig.clip = {
+        x,
+        y,
+        width,
+        height
       }
     }
   },
