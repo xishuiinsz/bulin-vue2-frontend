@@ -7,6 +7,7 @@
         :step="1"
         :max="500"
         :min="10"
+        @change="scaleRateChangeHandler"
       ></el-input-number>
       <el-upload
         :multiple="false"
@@ -99,33 +100,36 @@ export default {
       const img = new Image()
       const _this = this
       img.onload = () => {
+        this.imageMainOption.width = img.width
+        this.imageMainOption.height = img.height
         if (
-          img.width > _this.stageSize.width ||
-          img.height > _this.stageSize.height
+          img.width > this.stageSize.width ||
+          img.height > this.stageSize.height
         ) {
           if (
             img.width / img.height >
-            _this.stageSize.width / _this.stageSize.height
+            this.stageSize.width / this.stageSize.height
           ) {
-            _this.imageMainOption.width = _this.stageSize.width
-            _this.imageMainOption.height =
-              img.height * (_this.stageSize.width / img.width)
-            _this.imageMainOption.x = 0
-            _this.imageMainOption.y =
-              (this.stageSize.height - _this.imageMainOption.height) / 2
+            this.imageMainOption.scaleX = this.imageMainOption.scaleY =
+              this.stageSize.width / img.width
+            this.imageMainOption.x = 0
+            this.imageMainOption.y =
+              (this.stageSize.height - this.imageMainOption.height) / 2
           } else {
-            _this.imageMainOption.height = _this.stageSize.height
-            _this.imageMainOption.width =
-              img.width * (_this.stageSize.height / img.height)
-            _this.imageMainOption.y = 0
-            _this.imageMainOption.x =
-              (this.stageSize.width - _this.imageMainOption.width) / 2
+            this.imageMainOption.scaleX = this.imageMainOption.scaleY =
+              this.stageSize.height / img.height
+            this.imageMainOption.y = 0
+            this.imageMainOption.x =
+              (this.stageSize.width -
+                this.imageMainOption.width * this.imageMainOption.scaleX) /
+              2
           }
+          this.scaleRate = this.imageMainOption.scaleX * 100
         } else {
-          _this.imageMainOption.x = (this.stageSize.width - img.width) / 2
-          _this.imageMainOption.y = (this.stageSize.height - img.height) / 2
-          _this.imageMainOption.width = img.width
-          _this.imageMainOption.height = img.height
+          this.imageMainOption.x = (this.stageSize.width - img.width) / 2
+          this.imageMainOption.y = (this.stageSize.height - img.height) / 2
+          this.imageMainOption.width = img.width
+          this.imageMainOption.height = img.height
         }
         _this.imageMainOption.image = img
       }
@@ -165,6 +169,11 @@ export default {
         width,
         height
       }
+    },
+    // 手功调整 缩放率
+    scaleRateChangeHandler() {
+      this.imageMainOption.scaleX = this.imageMainOption.scaleY =
+        this.scaleRate / 100
     }
   },
   mounted() {
