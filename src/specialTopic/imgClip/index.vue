@@ -114,7 +114,9 @@ export default {
               this.stageSize.width / img.width
             this.imageMainOption.x = 0
             this.imageMainOption.y =
-              (this.stageSize.height - this.imageMainOption.height) / 2
+              (this.stageSize.height -
+                this.imageMainOption.height * this.imageMainOption.scaleX) /
+              2
           } else {
             this.imageMainOption.scaleX = this.imageMainOption.scaleY =
               this.stageSize.height / img.height
