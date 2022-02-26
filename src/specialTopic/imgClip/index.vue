@@ -76,7 +76,8 @@ export default {
         scaleX: 1,
         scaleY: 1,
         width: 0,
-        height: 0
+        height: 0,
+        centeredScaling: true
       }
     }
   },

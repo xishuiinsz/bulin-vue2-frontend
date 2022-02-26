@@ -188,6 +188,12 @@ export const asyncRoutes = [
         meta: { title: 'image clip Case', icon: 'edit' }
       },
       {
+        path: 'scaleAtCenter',
+        component: () => import('@/specialTopic/scaleAtCenter'),
+        name: 'ScaleAtCenter',
+        meta: { title: 'scale At Center', icon: 'edit' }
+      },
+      {
         path: 'todoItem',
         component: () => import('@/specialTopic/todoItem'),
         name: 'TodoItem',
