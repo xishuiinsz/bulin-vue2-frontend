@@ -110,9 +110,11 @@ export default {
       if (this.mousedownFlag) {
         const { offsetX, offsetY } = e
         this.imageMainOption.x =
-          this.imageMainOption.x + (offsetX - this.startX)
+          this.imageMainOption.x +
+          (offsetX - this.startX) / (this.scaleValue / 100)
         this.imageMainOption.y =
-          this.imageMainOption.y + (offsetY - this.startY)
+          this.imageMainOption.y +
+          (offsetY - this.startY) / (this.scaleValue / 100)
         this.handleChange()
         this.startX = offsetX
         this.startY = offsetY
