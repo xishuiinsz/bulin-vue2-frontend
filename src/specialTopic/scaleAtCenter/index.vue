@@ -57,6 +57,7 @@ export default {
 
       canvas.width = this.stageSize.width
       canvas.height = this.stageSize.height
+      canvas.addEventListener('wheel', this.mouseWhellEvt)
       this.ctx = canvas.getContext('2d')
       img.onload = () => {
         this.imageMainOption.width = img.width
@@ -91,6 +92,10 @@ export default {
         this.ctx.drawImage(img, this.imageMainOption.x, this.imageMainOption.y)
       }
       img.src = require('./girl01.png')
+    },
+    mouseWhellEvt(e) {
+      this.scaleValue += e.wheelDelta / 10
+      this.handleChange()
     }
   },
   mounted() {
