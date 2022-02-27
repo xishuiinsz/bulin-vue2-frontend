@@ -58,6 +58,9 @@ export default {
       canvas.width = this.stageSize.width
       canvas.height = this.stageSize.height
       canvas.addEventListener('wheel', this.mouseWhellEvt)
+      canvas.addEventListener('mousedown', this.mousedownEvt)
+      canvas.addEventListener('mousemove', this.mousemoveEvt)
+      canvas.addEventListener('mouseup', this.mouseupEvt)
       this.ctx = canvas.getContext('2d')
       img.onload = () => {
         this.imageMainOption.width = img.width
@@ -95,7 +98,28 @@ export default {
     },
     mouseWhellEvt(e) {
       this.scaleValue += e.wheelDelta / 10
+      console.log(e.offsetX, e.offsetY)
       this.handleChange()
+    },
+    mousedownEvt(e) {
+      this.startX = e.offsetX
+      this.startY = e.offsetY
+      this.mousedownFlag = true
+    },
+    mousemoveEvt(e) {
+      if (this.mousedownFlag) {
+        const { offsetX, offsetY } = e
+        this.imageMainOption.x =
+          this.imageMainOption.x + (offsetX - this.startX)
+        this.imageMainOption.y =
+          this.imageMainOption.y + (offsetY - this.startY)
+        this.handleChange()
+        this.startX = offsetX
+        this.startY = offsetY
+      }
+    },
+    mouseupEvt(e) {
+      this.mousedownFlag = false
     }
   },
   mounted() {
