@@ -37,12 +37,9 @@ export default {
   methods: {
     handleChange() {
       const scaleRate = this.scaleValue / 100
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0)
       this.ctx.clearRect(0, 0, this.stageSize.width, this.stageSize.height)
       this.ctx.save()
-      this.ctx.translate(
-        ((1 - scaleRate) * this.stageSize.width) / 2,
-        ((1 - scaleRate) * this.stageSize.height) / 2
-      )
       this.ctx.scale(scaleRate, scaleRate)
       this.ctx.drawImage(
         this.img,
@@ -73,32 +70,40 @@ export default {
             img.width / img.height >
             this.stageSize.width / this.stageSize.height
           ) {
-            this.scaleValue = this.stageSize.width / img.width
+            this.scaleValue = (this.stageSize.width / img.width) * 100
             this.imageMainOption.x = 0
             this.imageMainOption.y =
               (this.stageSize.height -
                 this.imageMainOption.height * this.scaleValue) /
               2
           } else {
-            this.scaleValue = this.stageSize.height / img.height
+            this.scaleValue = (this.stageSize.height / img.height) * 100
             this.imageMainOption.y = 0
             this.imageMainOption.x =
               (this.stageSize.width -
                 this.imageMainOption.width * this.scaleValue) /
               2
           }
+          if (
+            img.width / img.height ===
+            this.stageSize.width / this.stageSize.height
+          ) {
+            this.imageMainOption.x = this.imageMainOption.y = 0
+          }
         } else {
           this.imageMainOption.x = (this.stageSize.width - img.width) / 2
           this.imageMainOption.y = (this.stageSize.height - img.height) / 2
         }
         this.img = img
+
+        this.ctx.scale(this.scaleValue / 100, this.scaleValue / 100)
         this.ctx.drawImage(img, this.imageMainOption.x, this.imageMainOption.y)
       }
-      img.src = require('./girl01.png')
+      // img.src = require('@/assets/images/girl01.png')
+      img.src = require('@/assets/images/13378259.png')
     },
     mouseWhellEvt(e) {
       this.scaleValue += e.wheelDelta / 10
-      console.log(e.offsetX, e.offsetY)
       this.handleChange()
     },
     mousedownEvt(e) {
