@@ -5,10 +5,10 @@
       <el-input-number
         v-model="scaleValue"
         @change="handleChange"
-        :step="10"
+        :step="scaleStep"
         :min="10"
         :max="500"
-        label="描述文字"
+        label="缩放图片"
       ></el-input-number>
     </div>
     <div class="canvas-container">
@@ -21,6 +21,7 @@ export default {
   name: 'ScaleAtCener',
   data() {
     return {
+      scaleStep: 10,
       scaleValue: 100,
       stageSize: {
         width: 1200,
@@ -35,18 +36,21 @@ export default {
     }
   },
   methods: {
-    handleChange() {
-      const scaleRate = this.scaleValue / 100
+    draw() {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0)
       this.ctx.clearRect(0, 0, this.stageSize.width, this.stageSize.height)
       this.ctx.save()
-      this.ctx.scale(scaleRate, scaleRate)
+      this.ctx.scale(this.scaleRate, this.scaleRate)
       this.ctx.drawImage(
         this.img,
         this.imageMainOption.x,
         this.imageMainOption.y
       )
       this.ctx.restore()
+    },
+    handleChange() {
+      this.scaleRate = this.scaleValue / 100
+      this.draw()
     },
     init() {
       const img = new Image()
@@ -95,15 +99,22 @@ export default {
           this.imageMainOption.y = (this.stageSize.height - img.height) / 2
         }
         this.img = img
-
-        this.ctx.scale(this.scaleValue / 100, this.scaleValue / 100)
-        this.ctx.drawImage(img, this.imageMainOption.x, this.imageMainOption.y)
+        this.scaleRate = this.scaleValue / 100
+        this.draw()
       }
-      // img.src = require('@/assets/images/girl01.png')
-      img.src = require('@/assets/images/13378259.png')
+      img.src = require('@/assets/images/girl01.png')
+      // img.src = require('@/assets/images/13378259.png')
     },
     mouseWhellEvt(e) {
-      this.scaleValue += e.wheelDelta / 10
+      if (e.wheelDelta > 0) {
+        if (this.scaleValue >= 500) return
+        this.scaleValue += this.scaleStep
+      }
+      if (e.wheelDelta < 0) {
+        if (this.scaleValue <= 10) return
+        this.scaleValue -= this.scaleStep
+      }
+      console.log(e)
       this.handleChange()
     },
     mousedownEvt(e) {
@@ -120,7 +131,8 @@ export default {
         this.imageMainOption.y =
           this.imageMainOption.y +
           (offsetY - this.startY) / (this.scaleValue / 100)
-        this.handleChange()
+        this.scaleRate = this.scaleValue / 100
+        this.draw()
         this.startX = offsetX
         this.startY = offsetY
       }
