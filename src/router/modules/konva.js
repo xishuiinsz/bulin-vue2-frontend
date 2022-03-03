@@ -13,10 +13,10 @@ const konvaRouer = {
   },
   children: [
     {
-      path: 'workbench',
-      component: () => import('@/views/konva/workbench'),
-      name: 'Workbench',
-      meta: { title: 'Konva Workbench', noCache: true }
+      path: 'designWorkbench',
+      component: () => import('@/views/konva/designWorkbench'),
+      name: 'DesignWorkbench',
+      meta: { title: 'Design Workbench', noCache: true }
     },
     {
       path: 'keyboard',
@@ -25,10 +25,10 @@ const konvaRouer = {
       meta: { title: 'Konva Group', noCache: true }
     },
     {
-      path: 'mix-chart',
-      component: () => import('@/views/konva/mix-chart'),
-      name: 'MixChart',
-      meta: { title: 'Mix Chart', noCache: true }
+      path: 'clipWorkbench',
+      component: () => import('@/views/konva/clipWorkbench'),
+      name: 'ClipWorkbench',
+      meta: { title: 'Clip Workbench', noCache: true }
     }
   ]
 }

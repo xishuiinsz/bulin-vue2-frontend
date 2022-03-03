@@ -1,13 +1,14 @@
 <template>
-  <div class="img-clip-general-container">
+  <div class="clip-workbench-general-container">
     <div class="operation-area">
       <el-input-number
-        v-model="scaleRate"
+        :value="scaleValue"
         :precision="2"
         :step="scaleStep"
-        :max="500"
-        :min="10"
+        :max="maxScaleVal"
+        :min="minScaleVal"
         @change="scaleRateChangeHandler"
+        :disabled="!config4MainImage.image"
       ></el-input-number>
       <el-upload
         :multiple="false"
@@ -32,8 +33,10 @@
     <div class="canvas-outer-container">
       <div class="canvas-inner-container">
         <v-stage ref="stage" :config="stageSize">
-          <v-layer ref="layerMainImage" :config="layerConfig">
-            <v-image :config="imageMainOption" />
+          <v-layer ref="layerMainImage" :config="layer4MainImage">
+            <v-image :config="config4MainImage" />
+          </v-layer>
+          <v-layer ref="ref4CropBox" :config="layer4CropBox">
             <v-rect v-if="isShowClipBox" :config="configRect" />
           </v-layer>
         </v-stage>
@@ -43,22 +46,31 @@
 </template>
 <script>
 export default {
-  name: 'ImgClip',
+  name: 'ClipWorkbench',
   data() {
     return {
       scaleStep: 10,
+      minScaleVal: 10,
+      maxScaleVal: 400,
       stageSize: {
         width: 0,
         height: 0
       },
-      layerConfig: {
+      layer4CropBox: {
         clip: {}
+      },
+      layer4MainImage: {
+        scaleX: 1,
+        scaleY: 1,
+        x: 0,
+        y: 0
       },
       configClip: {
         width: 200,
         height: 300
       },
-      scaleRate: 100,
+      scaleValue: 100,
+      scaleValueLast: 100,
       configRect: {
         x: 0,
         y: 0,
@@ -69,16 +81,13 @@ export default {
         draggable: true
       },
       isShowClipBox: false,
-      imageMainOption: {
+      config4MainImage: {
         image: null,
         draggable: true,
         x: 100,
         y: 100,
-        scaleX: 1,
-        scaleY: 1,
         width: 0,
-        height: 0,
-        centeredScaling: true
+        height: 0
       }
     }
   },
@@ -102,8 +111,8 @@ export default {
       const img = new Image()
       const _this = this
       img.onload = () => {
-        this.imageMainOption.width = img.width
-        this.imageMainOption.height = img.height
+        this.config4MainImage.width = img.width
+        this.config4MainImage.height = img.height
         if (
           img.width > this.stageSize.width ||
           img.height > this.stageSize.height
@@ -112,30 +121,30 @@ export default {
             img.width / img.height >
             this.stageSize.width / this.stageSize.height
           ) {
-            this.imageMainOption.scaleX = this.imageMainOption.scaleY =
+            this.layer4MainImage.scaleX = this.layer4MainImage.scaleY =
               this.stageSize.width / img.width
-            this.imageMainOption.x = 0
-            this.imageMainOption.y =
+            this.config4MainImage.x = 0
+            this.config4MainImage.y =
               (this.stageSize.height -
-                this.imageMainOption.height * this.imageMainOption.scaleX) /
+                this.config4MainImage.height * this.layer4MainImage.scaleX) /
               2
           } else {
-            this.imageMainOption.scaleX = this.imageMainOption.scaleY =
+            this.layer4MainImage.scaleX = this.layer4MainImage.scaleY =
               this.stageSize.height / img.height
-            this.imageMainOption.y = 0
-            this.imageMainOption.x =
+            this.config4MainImage.y = 0
+            this.config4MainImage.x =
               (this.stageSize.width -
-                this.imageMainOption.width * this.imageMainOption.scaleX) /
+                this.config4MainImage.width * this.layer4MainImage.scaleX) /
               2
           }
-          this.scaleRate = this.imageMainOption.scaleX * 100
+          this.scaleValue = this.layer4MainImage.scaleX * 100
         } else {
-          this.imageMainOption.x = (this.stageSize.width - img.width) / 2
-          this.imageMainOption.y = (this.stageSize.height - img.height) / 2
-          this.imageMainOption.width = img.width
-          this.imageMainOption.height = img.height
+          this.config4MainImage.x = (this.stageSize.width - img.width) / 2
+          this.config4MainImage.y = (this.stageSize.height - img.height) / 2
+          this.config4MainImage.width = img.width
+          this.config4MainImage.height = img.height
         }
-        _this.imageMainOption.image = img
+        _this.config4MainImage.image = img
       }
       img.src = file
     },
@@ -147,21 +156,34 @@ export default {
     },
     switchShowClipBox() {
       if (!this.isShowClipBox) {
-        if (!this.imageMainOption.image) {
+        if (!this.config4MainImage.image) {
           this.$message.error('请先上传图片！')
           return
         }
-        this.configRect.x = this.imageMainOption.x
-        this.configRect.y = this.imageMainOption.y
-        this.configRect.width = this.imageMainOption.width
-        this.configRect.height = this.imageMainOption.height
+        this.configRect.x = this.config4MainImage.x
+        this.configRect.y = this.config4MainImage.y
+        this.configRect.width = this.config4MainImage.width
+        this.configRect.height = this.config4MainImage.height
       }
       this.isShowClipBox = !this.isShowClipBox
     },
+    // 手功调整 缩放率
+    scaleRateChangeHandler(currentValue, oldValue) {
+      this.scaleValue = currentValue
+      this.scaleValueLast = oldValue
+      this.scaleMainImage()
+    },
+    // mousewheel中间滚轮事件
     lmiMouseWheelHandler(e) {
-      this.scaleRate += e.wheelDelta / 10
-      this.imageMainOption.scaleX = this.scaleRate / 100
-      this.imageMainOption.scaleY = this.scaleRate / 100
+      if (!this.config4MainImage.image) {
+        this.$message.error('请先上传图片！')
+        return
+      }
+      if (e.wheelDelta > 0 && this.scaleValue >= this.maxScaleVal) return
+      if (e.wheelDelta < 0 && this.scaleValue <= this.minScaleVal) return
+      this.scaleValueLast = this.scaleValue
+      this.scaleValue += e.wheelDelta > 0 ? this.scaleStep : -this.scaleStep
+      this.scaleMainImage({ x: e.offsetX, y: e.offsetY })
     },
     // 开始裁剪
     confirmClipAction() {
@@ -174,25 +196,37 @@ export default {
         height
       }
     },
-    // 手功调整 缩放率
-    scaleRateChangeHandler() {
-      this.imageMainOption.scaleX = this.imageMainOption.scaleY =
-        this.scaleRate / 100
-      this.imageMainOption.x =
-        (this.stageSize.width - this.image.width * (this.scaleRate / 100)) / 2
-      this.imageMainOption.y =
-        (this.stageSize.height - this.image.height * (this.scaleRate / 100)) / 2
+    // 开始缩放主图片
+    scaleMainImage(pointer) {
+      const oldScale = this.scaleValueLast / 100
+      const newScale = this.scaleValue / 100
+      const mousePointTo = {
+        x: (pointer.x - this.layer4MainImage.x) / oldScale,
+        y: (pointer.y - this.layer4MainImage.y) / oldScale
+      }
+      this.layer4MainImage.scaleX = newScale
+      this.layer4MainImage.scaleY = newScale
+      this.layer4MainImage.x = pointer.x - mousePointTo.x * newScale
+      this.layer4MainImage.y = pointer.y - mousePointTo.y * newScale
+      // const center = {
+      //   x: this.config4MainImage.x + this.config4MainImage.width / 2,
+      //   y: this.config4MainImage.y + this.config4MainImage.height / 2
+      // }
+      // const pos = pointer || center
+      // console.log(pos)
     }
   },
+  watch: {},
   mounted() {
     this.initCanvas()
     window.addEventListener('resize', this.resize)
-    window.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
+    const stageDom = this.$refs.stage.$el
+    stageDom.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
   }
 }
 </script>
 <style lang="scss" scoped>
-.img-clip-general-container {
+.clip-workbench-general-container {
   width: 100%;
   height: calc(100vh - 84px);
   display: flex;
