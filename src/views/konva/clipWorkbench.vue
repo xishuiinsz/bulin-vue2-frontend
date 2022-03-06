@@ -22,10 +22,18 @@
       </el-upload>
       <el-button-group>
         <el-button @click="switchShowClipBox" size="small" type="primary">
-          裁剪框
+          {{ isShowClipBox ? '清空裁剪框' : '添加裁剪框' }}
         </el-button>
         <el-button @click="confirmClipAction" size="small" type="primary">
           开始裁剪
+        </el-button>
+        <el-button @click="bgImageConfig" size="small" type="primary">
+          {{
+            config4MainImage.fillPatternImage ? '清空背景图片' : '设置背景图片'
+          }}
+        </el-button>
+        <el-button @click="exportAsImageHandler" size="small" type="primary">
+          导出图片
         </el-button>
       </el-button-group>
     </div>
@@ -33,11 +41,15 @@
     <div class="canvas-outer-container">
       <div class="canvas-inner-container">
         <v-stage ref="stage" :config="stageSize">
-          <v-layer ref="layerMainImage" :config="layer4MainImage">
-            <v-image :config="config4MainImage" />
+          <v-layer ref="ref4MainLayer" :config="config4MainLayer">
+            <v-image ref="ref4MainImage" :config="config4MainImage" />
           </v-layer>
-          <v-layer ref="ref4CropBox" :config="layer4CropBox">
-            <v-rect v-if="isShowClipBox" :config="configRect" />
+          <v-layer
+            v-if="isShowClipBox"
+            ref="ref4CropBoxLayer"
+            :config="config4CropLayer"
+          >
+            <v-rect :config="configRect" ref="ref4CropBox" />
           </v-layer>
         </v-stage>
       </div>
@@ -56,19 +68,19 @@ export default {
         width: 0,
         height: 0
       },
-      layer4CropBox: {
-        clip: {}
-      },
-      layer4MainImage: {
+      config4MainLayer: {
         scaleX: 1,
         scaleY: 1,
         x: 0,
-        y: 0
+        y: 0,
+        clip: {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0
+        }
       },
-      configClip: {
-        width: 200,
-        height: 300
-      },
+      config4CropLayer: {},
       scaleValue: 100,
       scaleValueLast: 100,
       configRect: {
@@ -83,11 +95,15 @@ export default {
       isShowClipBox: false,
       config4MainImage: {
         image: null,
+        fillPatternImage: null,
         draggable: true,
         x: 100,
         y: 100,
         width: 0,
-        height: 0
+        height: 0,
+        strokeEnabled: true,
+        stroke: 'black',
+        strokeWidth: 1
       }
     }
   },
@@ -105,11 +121,8 @@ export default {
         target: this.$el
       })
     },
-    handleSuccess(response) {
-      this.loadingInstance.close()
-      const { file } = response.files
+    initImage(imgUrl) {
       const img = new Image()
-      const _this = this
       img.onload = () => {
         this.config4MainImage.width = img.width
         this.config4MainImage.height = img.height
@@ -121,32 +134,37 @@ export default {
             img.width / img.height >
             this.stageSize.width / this.stageSize.height
           ) {
-            this.layer4MainImage.scaleX = this.layer4MainImage.scaleY =
+            this.config4MainLayer.scaleX = this.config4MainLayer.scaleY =
               this.stageSize.width / img.width
             this.config4MainImage.x = 0
             this.config4MainImage.y =
               (this.stageSize.height -
-                this.config4MainImage.height * this.layer4MainImage.scaleX) /
+                this.config4MainImage.height * this.config4MainLayer.scaleX) /
               2
           } else {
-            this.layer4MainImage.scaleX = this.layer4MainImage.scaleY =
+            this.config4MainLayer.scaleX = this.config4MainLayer.scaleY =
               this.stageSize.height / img.height
             this.config4MainImage.y = 0
             this.config4MainImage.x =
               (this.stageSize.width -
-                this.config4MainImage.width * this.layer4MainImage.scaleX) /
+                this.config4MainImage.width * this.config4MainLayer.scaleX) /
               2
           }
-          this.scaleValue = this.layer4MainImage.scaleX * 100
+          this.scaleValue = this.config4MainLayer.scaleX * 100
         } else {
           this.config4MainImage.x = (this.stageSize.width - img.width) / 2
           this.config4MainImage.y = (this.stageSize.height - img.height) / 2
           this.config4MainImage.width = img.width
           this.config4MainImage.height = img.height
         }
-        _this.config4MainImage.image = img
+        this.config4MainImage.image = img
       }
-      img.src = file
+      img.src = imgUrl
+    },
+    handleSuccess(response) {
+      this.loadingInstance.close()
+      const { file } = response.files
+      this.initImage(file)
     },
     resize() {
       this.stageSize = {
@@ -160,12 +178,18 @@ export default {
           this.$message.error('请先上传图片！')
           return
         }
-        this.configRect.x = this.config4MainImage.x
-        this.configRect.y = this.config4MainImage.y
-        this.configRect.width = this.config4MainImage.width
-        this.configRect.height = this.config4MainImage.height
       }
       this.isShowClipBox = !this.isShowClipBox
+      if (this.isShowClipBox) {
+        const node4MainImage = this.$refs.ref4MainImage.getNode()
+        const { x, y } = node4MainImage.getAbsolutePosition()
+        this.configRect.x = x
+        this.configRect.y = y
+        this.configRect.width =
+          this.config4MainImage.width * (this.scaleValue / 100)
+        this.configRect.height =
+          this.config4MainImage.height * (this.scaleValue / 100)
+      }
     },
     // 手功调整 缩放率
     scaleRateChangeHandler(currentValue, oldValue) {
@@ -187,38 +211,80 @@ export default {
     },
     // 开始裁剪
     confirmClipAction() {
-      this.layerConfig.clip = {}
-      const { x, y, width, height } = this.configRect
-      this.layerConfig.clip = {
-        x,
-        y,
-        width,
-        height
+      // debugger
+      const scaleRate = this.scaleValue / 100
+      const { width: cropBoxWidth, height: cropBoxHeight } = this.configRect
+      const node4CropBox = this.$refs.ref4CropBox.getNode()
+      const { x: cropBoxX, y: cropBoxY } = node4CropBox.getAbsolutePosition()
+      const node4MainImage = this.$refs.ref4MainImage.getNode()
+      const { x: mainImageX, y: mainImageY } =
+        node4MainImage.getAbsolutePosition()
+      const mainImaggWidth = this.config4MainImage.width * scaleRate
+      const mainImaggHeight = this.config4MainImage.height * scaleRate
+      // console.log(cropBoxX, cropBoxY, cropBoxWidth, cropBoxHeight)
+      // console.log(mainImageX, mainImageY, mainImaggWidth, mainImaggHeight)
+      console.log(cropBoxX - mainImageX, cropBoxY - mainImageY)
+      const { x: offsetXLayer, y: offsetYLayer } = this.config4MainLayer
+      this.config4MainLayer.clip = {
+        x: cropBoxX,
+        y: cropBoxY,
+        width: cropBoxWidth / scaleRate,
+        height: cropBoxHeight / scaleRate
       }
     },
     // 开始缩放主图片
     scaleMainImage(pointer) {
       const oldScale = this.scaleValueLast / 100
       const newScale = this.scaleValue / 100
-      const mousePointTo = {
-        x: (pointer.x - this.layer4MainImage.x) / oldScale,
-        y: (pointer.y - this.layer4MainImage.y) / oldScale
+      const pos = pointer || {
+        x: this.config4MainImage.x + this.config4MainImage.width / 2,
+        y: this.config4MainImage.y + this.config4MainImage.height / 2
       }
-      this.layer4MainImage.scaleX = newScale
-      this.layer4MainImage.scaleY = newScale
-      this.layer4MainImage.x = pointer.x - mousePointTo.x * newScale
-      this.layer4MainImage.y = pointer.y - mousePointTo.y * newScale
-      // const center = {
-      //   x: this.config4MainImage.x + this.config4MainImage.width / 2,
-      //   y: this.config4MainImage.y + this.config4MainImage.height / 2
-      // }
-      // const pos = pointer || center
-      // console.log(pos)
+      const mousePointTo = {
+        x: (pos.x - this.config4MainLayer.x) / oldScale,
+        y: (pos.y - this.config4MainLayer.y) / oldScale
+      }
+      this.config4MainLayer.scaleX = newScale
+      this.config4MainLayer.scaleY = newScale
+      this.config4MainLayer.x = pos.x - mousePointTo.x * newScale
+      this.config4MainLayer.y = pos.y - mousePointTo.y * newScale
+    },
+    // 设置|清空背景图片
+    bgImageConfig() {
+      if (!this.config4MainImage.fillPatternImage) {
+        const bgImgUrl = require('@/assets/images/135458S3K.jpg')
+        const img = new Image()
+        img.onload = () => {
+          this.config4MainImage.fillPatternImage = img
+        }
+        img.src = bgImgUrl
+      } else {
+        this.config4MainImage.fillPatternImage = null
+      }
+    },
+    downloadURI(uri, name) {
+      const link = document.createElement('a')
+      link.download = name
+      link.href = uri
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      link.remove()
+    },
+    // 导出图片
+    exportAsImageHandler() {
+      const node4MainImage = this.$refs.ref4MainImage.getNode()
+      node4MainImage.toImage({
+        callback: img => {
+          this.downloadURI(img.src, 'stage.png')
+        }
+      })
     }
   },
   watch: {},
   mounted() {
     this.initCanvas()
+    this.$nextTick(this.initImage(require('@/assets/images/girl01.png')))
     window.addEventListener('resize', this.resize)
     const stageDom = this.$refs.stage.$el
     stageDom.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
