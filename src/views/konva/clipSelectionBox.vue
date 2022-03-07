@@ -63,6 +63,15 @@ export default {
       ],
       type: 'line'
     }
+    const lcLine = {
+      points: [
+        x,
+        y + height / 2 - lineLeng / 2,
+        x,
+        y + height / 2 + lineLeng / 2
+      ],
+      type: 'line'
+    }
     const vnodesList = [
       dataRect,
       tlLine,
@@ -71,14 +80,19 @@ export default {
       rcLine,
       brLine,
       bcLine,
-      blLine
+      blLine,
+      lcLine
     ]
+    const configGroup = { draggable: true }
     if (keepRatio) {
       vnodesList.splice(2, 1)
       vnodesList.splice(3, 1)
+      vnodesList.splice(4, 1)
+      vnodesList.splice(5, 1)
+      Object.assign(configGroup, { keepRatio: true })
     }
     const vnodes = (
-      <v-group config={{ draggable: true }}>
+      <v-group config={configGroup}>
         {vnodesList.map(node => {
           if (node.type === 'line') {
             Object.assign(node, {
