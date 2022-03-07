@@ -44,12 +44,8 @@
           <v-layer ref="ref4MainLayer" :config="config4MainLayer">
             <v-image ref="ref4MainImage" :config="config4MainImage" />
           </v-layer>
-          <v-layer
-            v-if="isShowClipBox"
-            ref="ref4CropBoxLayer"
-            :config="config4CropLayer"
-          >
-            <v-rect :config="configRect" ref="ref4CropBox" />
+          <v-layer v-if="isShowClipBox" ref="ref4CropBoxLayer">
+            <clip-selection-box :dataRect="configRect" />
           </v-layer>
         </v-stage>
       </div>
@@ -57,8 +53,10 @@
   </div>
 </template>
 <script>
+import ClipSelectionBox from './clipSelectionBox.vue'
 export default {
   name: 'ClipWorkbench',
+  components: { ClipSelectionBox },
   data() {
     return {
       scaleStep: 10,
@@ -80,19 +78,18 @@ export default {
           height: 0
         }
       },
-      config4CropLayer: {},
       scaleValue: 100,
       scaleValueLast: 100,
       configRect: {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
+        x: 200,
+        y: 200,
+        width: 400,
+        height: 400,
         stroke: 'green',
         strokeWidth: 1,
-        draggable: true
+        type: 'rect'
       },
-      isShowClipBox: false,
+      isShowClipBox: true,
       config4MainImage: {
         image: null,
         fillPatternImage: null,
