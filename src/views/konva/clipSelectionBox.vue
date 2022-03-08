@@ -4,11 +4,20 @@ export default {
   functional: true,
   render(h, context) {
     const { dataRect, keepRatio = false } = context.props
-    const { x, y, width, height } = dataRect
+    const { x, y, width, height, draggable } = dataRect
     const lineLeng = 12
     const tlLine = {
       points: [x, y + lineLeng, x, y, x + lineLeng, y],
-      type: 'line'
+      type: 'line',
+      id: 'tl'
+    }
+    const rectBox = {
+      x,
+      y,
+      width,
+      height,
+      type: 'rect',
+      id: 'rectBox'
     }
     const tcLine = {
       points: [
@@ -17,11 +26,13 @@ export default {
         x + width / 2 + lineLeng / 2,
         y
       ],
-      type: 'line'
+      type: 'line',
+      id: 'tc'
     }
     const trLine = {
       points: [x + width - lineLeng, y, x + width, y, x + width, y + lineLeng],
-      type: 'line'
+      type: 'line',
+      id: 'tr'
     }
     const rcLine = {
       points: [
@@ -30,7 +41,8 @@ export default {
         x + width,
         y + height / 2 + lineLeng / 2
       ],
-      type: 'line'
+      type: 'line',
+      id: 'rc'
     }
     const brLine = {
       points: [
@@ -41,7 +53,8 @@ export default {
         x + width - lineLeng,
         y + height
       ],
-      type: 'line'
+      type: 'line',
+      id: 'br'
     }
     const bcLine = {
       points: [
@@ -50,7 +63,8 @@ export default {
         x + width / 2 + lineLeng / 2,
         y + height
       ],
-      type: 'line'
+      type: 'line',
+      id: 'bc'
     }
     const blLine = {
       points: [
@@ -61,7 +75,8 @@ export default {
         x + lineLeng,
         y + height
       ],
-      type: 'line'
+      type: 'line',
+      id: 'bl'
     }
     const lcLine = {
       points: [
@@ -70,25 +85,23 @@ export default {
         x,
         y + height / 2 + lineLeng / 2
       ],
-      type: 'line'
+      type: 'line',
+      id: 'lc'
     }
     const vnodesList = [
-      dataRect,
+      rectBox,
       tlLine,
-      tcLine,
       trLine,
-      rcLine,
       brLine,
-      bcLine,
       blLine,
+      tcLine,
+      rcLine,
+      bcLine,
       lcLine
     ]
-    const configGroup = { draggable: true }
+    const configGroup = { draggable }
     if (keepRatio) {
-      vnodesList.splice(2, 1)
-      vnodesList.splice(3, 1)
-      vnodesList.splice(4, 1)
-      vnodesList.splice(5, 1)
+      vnodesList.splice(5, 4)
       Object.assign(configGroup, { keepRatio: true })
     }
     const vnodes = (
@@ -99,12 +112,15 @@ export default {
               stroke: 'red',
               strokeWidth: 4,
               lineCap: 'round',
-              lineJoin: 'round',
-              type: 'line'
+              lineJoin: 'round'
             })
             return <v-line config={node} />
           }
           if (node.type === 'rect') {
+            Object.assign(node, {
+              stroke: 'green',
+              strokeWidth: 1
+            })
             return <v-rect config={node} />
           }
         })}

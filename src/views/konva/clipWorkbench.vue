@@ -86,8 +86,8 @@ export default {
         width: 400,
         height: 400,
         stroke: 'green',
-        strokeWidth: 1,
-        type: 'rect'
+
+        draggable: false
       },
       isShowClipBox: true,
       config4MainImage: {
@@ -276,6 +276,73 @@ export default {
           this.downloadURI(img.src, 'stage.png')
         }
       })
+    },
+    stageMousedownEvt(e) {
+      const id = e.target.getAttr('id')
+      let x1, y1, x2, y2
+      x1 = this.nodeStage.getPointerPosition().x
+      y1 = this.nodeStage.getPointerPosition().y
+      x2 = this.nodeStage.getPointerPosition().x
+      y2 = this.nodeStage.getPointerPosition().y
+      this.nodeStage.off('mousemove')
+      const { x, y, width, height } = this.configRect
+      this.nodeStage.on('mousemove', e => {
+        e.evt.preventDefault()
+        x2 = this.nodeStage.getPointerPosition().x
+        y2 = this.nodeStage.getPointerPosition().y
+        switch (id) {
+          case 'rectBox':
+            this.configRect.draggable = true
+            break
+          case 'bc':
+            Object.assign(this.configRect, {
+              height: height + y2 - y1,
+              draggable: false
+            })
+            break
+          case 'tc':
+            Object.assign(this.configRect, {
+              height: height - (y2 - y1),
+              y: y + (y2 - y1),
+              draggable: false
+            })
+            break
+
+          default:
+            break
+        }
+      })
+    },
+    stageMousemoveEvt(e) {
+      const id = e.target.getAttr('id')
+      switch (id) {
+        case 'rectBox':
+          this.nodeStage.container().style.cursor = 'move'
+          break
+        case 'tl':
+        case 'br':
+          this.nodeStage.container().style.cursor = 'nw-resize'
+          break
+        case 'tr':
+        case 'bl':
+          this.nodeStage.container().style.cursor = 'ne-resize'
+          break
+        case 'tc':
+        case 'bc':
+          this.nodeStage.container().style.cursor = 'n-resize'
+          break
+        case 'rc':
+        case 'lc':
+          this.nodeStage.container().style.cursor = 'e-resize'
+          break
+        default:
+          this.nodeStage.container().style.cursor = 'default'
+          break
+      }
+    },
+    stageMouseupEvt(e) {
+      this.nodeStage.off('mousemove')
+      this.nodeStage.on('mousemove', this.stageMousemoveEvt)
     }
   },
   watch: {},
@@ -283,8 +350,13 @@ export default {
     this.initCanvas()
     this.$nextTick(this.initImage(require('@/assets/images/girl01.png')))
     window.addEventListener('resize', this.resize)
-    const stageDom = this.$refs.stage.$el
-    stageDom.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
+    this.nodeStage = this.$refs.stage.getNode()
+    this.nodeStage
+      .container()
+      .addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
+    this.nodeStage.on('mousedown', this.stageMousedownEvt)
+    this.nodeStage.on('mousemove', this.stageMousemoveEvt)
+    this.nodeStage.on('mouseup', this.stageMouseupEvt)
   }
 }
 </script>
