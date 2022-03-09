@@ -35,6 +35,9 @@
         <el-button @click="exportAsImageHandler" size="small" type="primary">
           导出图片
         </el-button>
+        <el-button @click="strokeOutlineHandler" size="small" type="primary">
+          轮廓描边
+        </el-button>
       </el-button-group>
     </div>
 
@@ -43,6 +46,8 @@
         <v-stage ref="stage" :config="stageSize">
           <v-layer ref="ref4MainLayer" :config="config4MainLayer">
             <v-image ref="ref4MainImage" :config="config4MainImage" />
+            <v-line :config="configOutline" />
+            <v-rect :config="computedRect" />
           </v-layer>
           <v-layer v-if="isShowClipBox" ref="ref4CropBoxLayer">
             <clip-selection-box :dataRect="configRect" />
@@ -54,11 +59,13 @@
 </template>
 <script>
 import ClipSelectionBox from './clipSelectionBox.vue'
+import getImageOutline from 'image-outline'
 export default {
   name: 'ClipWorkbench',
   components: { ClipSelectionBox },
   data() {
     return {
+      points: [],
       scaleStep: 10,
       minScaleVal: 10,
       maxScaleVal: 400,
@@ -86,7 +93,6 @@ export default {
         width: 400,
         height: 400,
         stroke: 'green',
-
         draggable: false
       },
       isShowClipBox: true,
@@ -104,7 +110,41 @@ export default {
       }
     }
   },
-  computed: {},
+  computed: {
+    configOutline() {
+      const points = this.points
+      let x, y
+      if (this.$refs.ref4MainImage) {
+        const node4MainImage = this.$refs.ref4MainImage.getNode()
+        x = node4MainImage.getAbsolutePosition().x
+        y = node4MainImage.getAbsolutePosition().y
+      } else {
+        x = this.config4MainImage.x
+        y = this.config4MainImage.y
+      }
+      const configOutline = {
+        points,
+        fill: '#00D2FF',
+        stroke: 'black',
+        strokeWidth: 5,
+        x,
+        y
+      }
+      return configOutline
+    },
+    computedRect() {
+      const scaleRate = this.scaleValue / 100
+      const { x: offsetX, y: offsetY } = this.config4MainLayer
+      const { x, y, width, height } = this.configRect
+      return {
+        x: (x + offsetX) / scaleRate,
+        y: (y + offsetY) / scaleRate,
+        width: width / scaleRate,
+        height: height / scaleRate,
+        stroke: 'green'
+      }
+    }
+  },
   methods: {
     initCanvas() {
       const canvasInnerContainer = document.querySelector(
@@ -279,9 +319,9 @@ export default {
     },
     stageMousedownEvt(e) {
       const id = e.target.getAttr('id')
-      let x1, y1, x2, y2
-      x1 = this.nodeStage.getPointerPosition().x
-      y1 = this.nodeStage.getPointerPosition().y
+      let x2, y2
+      const x1 = this.nodeStage.getPointerPosition().x
+      const y1 = this.nodeStage.getPointerPosition().y
       x2 = this.nodeStage.getPointerPosition().x
       y2 = this.nodeStage.getPointerPosition().y
       this.nodeStage.off('mousemove')
@@ -292,19 +332,20 @@ export default {
         y2 = this.nodeStage.getPointerPosition().y
         switch (id) {
           case 'rectBox':
-            this.configRect.draggable = true
+            Object.assign(this.configRect, {
+              x: x + x2 - x1,
+              y: y + y2 - y1
+            })
             break
           case 'bc':
             Object.assign(this.configRect, {
-              height: height + y2 - y1,
-              draggable: false
+              height: height + y2 - y1
             })
             break
           case 'tc':
             Object.assign(this.configRect, {
               height: height - (y2 - y1),
-              y: y + (y2 - y1),
-              draggable: false
+              y: y + (y2 - y1)
             })
             break
 
@@ -343,6 +384,13 @@ export default {
     stageMouseupEvt(e) {
       this.nodeStage.off('mousemove')
       this.nodeStage.on('mousemove', this.stageMousemoveEvt)
+    },
+    // 轮廓描边
+    strokeOutlineHandler() {
+      const { image } = this.config4MainImage
+      const polygon = getImageOutline(image)
+      const points = polygon.map(item => [item.x, item.y]).flat()
+      this.points = points
     }
   },
   watch: {},
