@@ -47,7 +47,7 @@
           <v-layer ref="ref4MainLayer" :config="config4MainLayer">
             <v-image ref="ref4MainImage" :config="config4MainImage" />
             <v-line :config="configOutline" />
-            <v-rect :config="computedRect" />
+            <v-rect :config="computedRect" ref="refShadowClipBox" />
           </v-layer>
           <v-layer v-if="isShowClipBox" ref="ref4CropBoxLayer">
             <clip-selection-box :dataRect="configRect" />
@@ -90,8 +90,8 @@ export default {
       configRect: {
         x: 200,
         y: 200,
-        width: 400,
-        height: 400,
+        width: 200,
+        height: 250,
         stroke: 'green',
         draggable: false
       },
@@ -137,8 +137,8 @@ export default {
       const { x: offsetX, y: offsetY } = this.config4MainLayer
       const { x, y, width, height } = this.configRect
       return {
-        x: (x + offsetX) / scaleRate,
-        y: (y + offsetY) / scaleRate,
+        x: (x + offsetX * 2) / scaleRate,
+        y: (y + offsetY * 2) / scaleRate,
         width: width / scaleRate,
         height: height / scaleRate,
         stroke: 'green'
@@ -248,23 +248,18 @@ export default {
     },
     // 开始裁剪
     confirmClipAction() {
-      // debugger
       const scaleRate = this.scaleValue / 100
       const { width: cropBoxWidth, height: cropBoxHeight } = this.configRect
-      const node4CropBox = this.$refs.ref4CropBox.getNode()
-      const { x: cropBoxX, y: cropBoxY } = node4CropBox.getAbsolutePosition()
-      const node4MainImage = this.$refs.ref4MainImage.getNode()
-      const { x: mainImageX, y: mainImageY } =
-        node4MainImage.getAbsolutePosition()
-      const mainImaggWidth = this.config4MainImage.width * scaleRate
-      const mainImaggHeight = this.config4MainImage.height * scaleRate
-      // console.log(cropBoxX, cropBoxY, cropBoxWidth, cropBoxHeight)
-      // console.log(mainImageX, mainImageY, mainImaggWidth, mainImaggHeight)
-      console.log(cropBoxX - mainImageX, cropBoxY - mainImageY)
-      const { x: offsetXLayer, y: offsetYLayer } = this.config4MainLayer
+      const nodeStage = this.$refs.stage.getNode()
+      const node4CropBox = nodeStage.findOne('#rectBox')
+      const { x, y } = node4CropBox.getAbsolutePosition()
+      const nodeShadowClipBox = this.$refs.refShadowClipBox.getNode()
+      nodeShadowClipBox.absolutePosition({ x, y })
+      const relativeX = nodeShadowClipBox.x()
+      const relativeY = nodeShadowClipBox.y()
       this.config4MainLayer.clip = {
-        x: cropBoxX,
-        y: cropBoxY,
+        x: relativeX,
+        y: relativeY,
         width: cropBoxWidth / scaleRate,
         height: cropBoxHeight / scaleRate
       }
