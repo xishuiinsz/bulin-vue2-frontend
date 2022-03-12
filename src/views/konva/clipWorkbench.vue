@@ -47,7 +47,11 @@
           <v-layer ref="ref4MainLayer" :config="config4MainLayer">
             <v-image ref="ref4MainImage" :config="config4MainImage" />
             <v-line :config="configOutline" />
-            <v-rect :config="computedRect" ref="refShadowClipBox" />
+            <v-rect
+              v-if="isShowClipBox"
+              :config="computedRect"
+              ref="refShadowClipBox"
+            />
           </v-layer>
           <v-layer v-if="isShowClipBox" ref="ref4CropBoxLayer">
             <clip-selection-box :dataRect="configRect" />
@@ -74,10 +78,12 @@ export default {
         height: 0
       },
       config4MainLayer: {
+        draggable: true,
         scaleX: 1,
         scaleY: 1,
         x: 0,
         y: 0,
+        id: 'mainLayer',
         clip: {
           x: 0,
           y: 0,
@@ -87,6 +93,7 @@ export default {
       },
       scaleValue: 100,
       scaleValueLast: 100,
+      fitZoom: 1, // 自适应比例
       configRect: {
         x: 200,
         y: 200,
@@ -95,17 +102,18 @@ export default {
         stroke: 'green',
         draggable: false
       },
-      isShowClipBox: true,
+      isShowClipBox: false,
       config4MainImage: {
         image: null,
         fillPatternImage: null,
-        draggable: true,
+
         x: 100,
         y: 100,
         width: 0,
         height: 0,
         strokeEnabled: true,
         stroke: 'black',
+        id: 'mainImage',
         strokeWidth: 1
       }
     }
@@ -116,8 +124,8 @@ export default {
       let x, y
       if (this.$refs.ref4MainImage) {
         const node4MainImage = this.$refs.ref4MainImage.getNode()
-        x = node4MainImage.getAbsolutePosition().x
-        y = node4MainImage.getAbsolutePosition().y
+        x = node4MainImage.x()
+        y = node4MainImage.y()
       } else {
         x = this.config4MainImage.x
         y = this.config4MainImage.y
@@ -127,6 +135,7 @@ export default {
         fill: '#00D2FF',
         stroke: 'black',
         strokeWidth: 5,
+        id: 'outline',
         x,
         y
       }
@@ -141,7 +150,7 @@ export default {
         y: (y + offsetY * 2) / scaleRate,
         width: width / scaleRate,
         height: height / scaleRate,
-        stroke: 'green'
+        id: 'shadowClipRectBox'
       }
     }
   },
@@ -177,7 +186,8 @@ export default {
             this.config4MainImage.y =
               (this.stageSize.height -
                 this.config4MainImage.height * this.config4MainLayer.scaleX) /
-              2
+              2 /
+              this.config4MainLayer.scaleX
           } else {
             this.config4MainLayer.scaleX = this.config4MainLayer.scaleY =
               this.stageSize.height / img.height
@@ -185,7 +195,8 @@ export default {
             this.config4MainImage.x =
               (this.stageSize.width -
                 this.config4MainImage.width * this.config4MainLayer.scaleX) /
-              2
+              2 /
+              this.config4MainLayer.scaleX
           }
           this.scaleValue = this.config4MainLayer.scaleX * 100
         } else {
@@ -250,10 +261,9 @@ export default {
     confirmClipAction() {
       const scaleRate = this.scaleValue / 100
       const { width: cropBoxWidth, height: cropBoxHeight } = this.configRect
-      const nodeStage = this.$refs.stage.getNode()
-      const node4CropBox = nodeStage.findOne('#rectBox')
+      const node4CropBox = this.nodeStage.findOne('#rectBox')
       const { x, y } = node4CropBox.getAbsolutePosition()
-      const nodeShadowClipBox = this.$refs.refShadowClipBox.getNode()
+      const nodeShadowClipBox = this.nodeStage.findOne('#shadowClipRectBox')
       nodeShadowClipBox.absolutePosition({ x, y })
       const relativeX = nodeShadowClipBox.x()
       const relativeY = nodeShadowClipBox.y()
@@ -305,6 +315,10 @@ export default {
     },
     // 导出图片
     exportAsImageHandler() {
+      const { width, height } = this.config4MainLayer.clip
+      if (width > 0 && height > 0) {
+        console.log('裁剪')
+      }
       const node4MainImage = this.$refs.ref4MainImage.getNode()
       node4MainImage.toImage({
         callback: img => {
@@ -341,6 +355,45 @@ export default {
             Object.assign(this.configRect, {
               height: height - (y2 - y1),
               y: y + (y2 - y1)
+            })
+            break
+          case 'rc':
+            Object.assign(this.configRect, {
+              width: width + (x2 - x1)
+            })
+            break
+          case 'lc':
+            Object.assign(this.configRect, {
+              width: width - (x2 - x1),
+              x: x + (x2 - x1)
+            })
+            break
+          case 'br':
+            Object.assign(this.configRect, {
+              height: height + (y2 - y1),
+              width: width + (x2 - x1)
+            })
+            break
+          case 'tl':
+            Object.assign(this.configRect, {
+              height: height - (y2 - y1),
+              width: width - (x2 - x1),
+              x: x + (x2 - x1),
+              y: y + (y2 - y1)
+            })
+            break
+          case 'tr':
+            Object.assign(this.configRect, {
+              width: width + (x2 - x1),
+              height: height - (y2 - y1),
+              y: y + (y2 - y1)
+            })
+            break
+          case 'bl':
+            Object.assign(this.configRect, {
+              width: width - (x2 - x1),
+              x: x + (x2 - x1),
+              height: height + y2 - y1
             })
             break
 
@@ -391,7 +444,7 @@ export default {
   watch: {},
   mounted() {
     this.initCanvas()
-    this.$nextTick(this.initImage(require('@/assets/images/girl01.png')))
+    this.$nextTick(this.initImage(require('@/assets/images/girl08.png')))
     window.addEventListener('resize', this.resize)
     this.nodeStage = this.$refs.stage.getNode()
     this.nodeStage
