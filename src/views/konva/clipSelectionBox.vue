@@ -4,20 +4,30 @@ export default {
   functional: true,
   render(h, context) {
     const { dataRect, keepRatio = false } = context.props
-    const { x, y, width, height, draggable } = dataRect
+    const { x, y, width, height, draggable, stroke, isFixedSize } = dataRect
     const lineLeng = 12
-    const tlLine = {
-      points: [x, y + lineLeng, x, y, x + lineLeng, y],
-      type: 'line',
-      id: 'tl'
-    }
+    const configGroup = { draggable }
     const rectBox = {
       x,
       y,
       width,
       height,
       type: 'rect',
-      id: 'rectBox'
+      id: 'rectBox',
+      strokeWidth: 1,
+      stroke
+    }
+    if (isFixedSize) {
+      return (
+        <v-group config={configGroup}>
+          <v-rect config={rectBox} />
+        </v-group>
+      )
+    }
+    const tlLine = {
+      points: [x, y + lineLeng, x, y, x + lineLeng, y],
+      type: 'line',
+      id: 'tl'
     }
     const tcLine = {
       points: [
@@ -99,7 +109,7 @@ export default {
       bcLine,
       lcLine
     ]
-    const configGroup = { draggable }
+
     if (keepRatio) {
       vnodesList.splice(5, 4)
       Object.assign(configGroup, { keepRatio: true })
@@ -117,10 +127,6 @@ export default {
             return <v-line config={node} />
           }
           if (node.type === 'rect') {
-            Object.assign(node, {
-              stroke: 'green',
-              strokeWidth: 1
-            })
             return <v-rect config={node} />
           }
         })}

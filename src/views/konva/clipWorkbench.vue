@@ -7,6 +7,7 @@
         :step="scaleStep"
         :max="maxScaleVal"
         :min="minScaleVal"
+        size="small"
         @change="scaleRateChangeHandler"
         :disabled="!config4MainImage.image"
       ></el-input-number>
@@ -38,6 +39,24 @@
         <el-button @click="strokeOutlineHandler" size="small" type="primary">
           轮廓描边
         </el-button>
+        <el-popover
+          placement="bottom"
+          title="请选择尺寸"
+          width="200"
+          trigger="click"
+        >
+          <el-button-group>
+            <el-button @click="littlerOneInch" size="small" type="primary">
+              小一寸
+            </el-button>
+            <el-button @click="normalOneInch" size="small" type="primary">
+              一寸
+            </el-button>
+          </el-button-group>
+          <el-button size="small" type="primary" slot="reference"
+            >证件照</el-button
+          >
+        </el-popover>
       </el-button-group>
     </div>
 
@@ -100,6 +119,7 @@ export default {
         width: 200,
         height: 250,
         stroke: 'green',
+        isFixedSize: false,
         draggable: false
       },
       isShowClipBox: false,
@@ -439,6 +459,26 @@ export default {
       const polygon = getImageOutline(image)
       const points = polygon.map(item => [item.x, item.y]).flat()
       this.points = points
+    },
+    // 小一寸
+    littlerOneInch() {
+      const width = 2.2 * 25
+      const height = 3.2 * 25
+      Object.assign(this.configRect, {
+        width,
+        height,
+        isFixedSize: true
+      })
+    },
+    // 一寸
+    normalOneInch() {
+      const width = 2.5 * 25
+      const height = 3.5 * 25
+      Object.assign(this.configRect, {
+        width,
+        height,
+        isFixedSize: true
+      })
     }
   },
   watch: {},
