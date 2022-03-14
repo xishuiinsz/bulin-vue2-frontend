@@ -187,58 +187,68 @@ export default {
         target: this.$el
       })
     },
+    // 初始化主图片
     initImage(imgUrl) {
       const img = new Image()
       img.onload = () => {
-        this.config4MainImage.width = img.width
-        this.config4MainImage.height = img.height
-        if (
-          img.width > this.stageSize.width ||
-          img.height > this.stageSize.height
-        ) {
-          if (
-            img.width / img.height >
-            this.stageSize.width / this.stageSize.height
-          ) {
-            this.config4MainLayer.scaleX = this.config4MainLayer.scaleY =
-              this.stageSize.width / img.width
-            this.config4MainImage.x = 0
-            this.config4MainImage.y =
-              (this.stageSize.height -
-                this.config4MainImage.height * this.config4MainLayer.scaleX) /
-              2 /
-              this.config4MainLayer.scaleX
-          } else {
-            this.config4MainLayer.scaleX = this.config4MainLayer.scaleY =
-              this.stageSize.height / img.height
-            this.config4MainImage.y = 0
-            this.config4MainImage.x =
-              (this.stageSize.width -
-                this.config4MainImage.width * this.config4MainLayer.scaleX) /
-              2 /
-              this.config4MainLayer.scaleX
-          }
-          this.scaleValue = this.config4MainLayer.scaleX * 100
-        } else {
-          this.config4MainImage.x = (this.stageSize.width - img.width) / 2
-          this.config4MainImage.y = (this.stageSize.height - img.height) / 2
-          this.config4MainImage.width = img.width
-          this.config4MainImage.height = img.height
-        }
-        this.config4MainImage.image = img
+        this.initScale(img)
       }
       img.src = imgUrl
     },
+    // 初始化缩放率
+    initScale(img) {
+      this.config4MainImage.width = img.width
+      this.config4MainImage.height = img.height
+      if (
+        img.width > this.stageSize.width ||
+        img.height > this.stageSize.height
+      ) {
+        if (
+          img.width / img.height >=
+          this.stageSize.width / this.stageSize.height
+        ) {
+          this.fitZoom = this.stageSize.width / img.width
+          this.config4MainImage.x = 0
+          this.config4MainImage.y =
+            (this.stageSize.height -
+              this.config4MainImage.height * this.fitZoom) /
+            2 /
+            this.fitZoom
+        } else {
+          this.fitZoom = this.stageSize.height / img.height
+          this.config4MainImage.y = 0
+          this.config4MainImage.x =
+            (this.stageSize.width -
+              this.config4MainImage.width * this.fitZoom) /
+            2 /
+            this.fitZoom
+        }
+      } else {
+        this.config4MainImage.x = (this.stageSize.width - img.width) / 2
+        this.config4MainImage.y = (this.stageSize.height - img.height) / 2
+      }
+      this.scaleValue = this.fitZoom * 100
+      this.config4MainLayer.scaleX = this.config4MainLayer.scaleY = this.fitZoom
+      this.config4MainImage.image = img
+    },
+    // 上传成功的回调
     handleSuccess(response) {
       this.loadingInstance.close()
       const { file } = response.files
       this.initImage(file)
     },
+    // 窗口窗口变化事件
     resize() {
-      this.stageSize = {
+      this.fitZoom = 1
+      this.scaleValue = 100
+      this.config4MainLayer.clip = {
+        x: 0,
+        y: 0,
         width: 0,
         height: 0
       }
+      this.initCanvas()
+      this.initScale(this.config4MainImage.image)
     },
     switchShowClipBox() {
       if (!this.isShowClipBox) {
@@ -249,7 +259,7 @@ export default {
       }
       this.isShowClipBox = !this.isShowClipBox
       if (this.isShowClipBox) {
-        const node4MainImage = this.$refs.ref4MainImage.getNode()
+        const node4MainImage = this.nodeStage.findOne('#mainImage')
         const { x, y } = node4MainImage.getAbsolutePosition()
         this.configRect.x = x
         this.configRect.y = y
@@ -279,6 +289,7 @@ export default {
     },
     // 开始裁剪
     confirmClipAction() {
+      if (!this.isShowClipBox) return
       const scaleRate = this.scaleValue / 100
       const { width: cropBoxWidth, height: cropBoxHeight } = this.configRect
       const node4CropBox = this.nodeStage.findOne('#rectBox')
@@ -335,14 +346,20 @@ export default {
     },
     // 导出图片
     exportAsImageHandler() {
-      const { width, height } = this.config4MainLayer.clip
-      if (width > 0 && height > 0) {
-        console.log('裁剪')
-      }
-      const node4MainImage = this.$refs.ref4MainImage.getNode()
+      const node4MainImage = this.nodeStage.findOne('#mainImage')
       node4MainImage.toImage({
         callback: img => {
-          this.downloadURI(img.src, 'stage.png')
+          const { width, height } = this.config4MainLayer.clip
+          if (width > 0 && height > 0) {
+            const nodeShadowClipBox =
+              this.nodeStage.findOne('#shadowClipRectBox')
+            const { x: actualX, y: actualY } =
+              nodeShadowClipBox.getAbsolutePosition()
+            const scaleRate = this.scaleValue / 100
+            const actualWidth = width * scaleRate
+            const actualHeight = height * scaleRate
+            console.log(actualWidth, actualHeight, actualX, actualY)
+          } else this.downloadURI(img.src, 'stage.png')
         }
       })
     },
