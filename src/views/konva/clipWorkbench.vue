@@ -63,7 +63,11 @@
     <div class="canvas-outer-container">
       <div class="canvas-inner-container">
         <v-stage ref="stage" :config="stageSize">
-          <v-layer ref="ref4MainLayer" :config="config4MainLayer">
+          <v-layer
+            ref="ref4MainLayer"
+            @dragend="dragEndEvt"
+            :config="config4MainLayer"
+          >
             <v-image ref="ref4MainImage" :config="config4MainImage" />
             <v-line :config="configOutline" />
             <v-rect
@@ -346,20 +350,40 @@ export default {
     },
     // 导出图片
     exportAsImageHandler() {
+      const node4MainLayer = this.nodeStage.findOne('#mainLayer')
       const node4MainImage = this.nodeStage.findOne('#mainImage')
-      node4MainImage.toImage({
+      console.log(node4MainImage.getAbsolutePosition())
+      node4MainLayer.toImage({
         callback: img => {
-          const { width, height } = this.config4MainLayer.clip
-          if (width > 0 && height > 0) {
-            const nodeShadowClipBox =
-              this.nodeStage.findOne('#shadowClipRectBox')
-            const { x: actualX, y: actualY } =
-              nodeShadowClipBox.getAbsolutePosition()
-            const scaleRate = this.scaleValue / 100
-            const actualWidth = width * scaleRate
-            const actualHeight = height * scaleRate
-            console.log(actualWidth, actualHeight, actualX, actualY)
-          } else this.downloadURI(img.src, 'stage.png')
+          console.log(img)
+          this.downloadURI(img.src, Date.now() + '.png')
+          // const { width, height } = this.config4MainLayer.clip
+          // if (width > 0 && height > 0) {
+          //   const nodeShadowClipBox =
+          //     this.nodeStage.findOne('#shadowClipRectBox')
+          //   const { x: actualX, y: actualY } =
+          //     nodeShadowClipBox.getAbsolutePosition()
+          //   const scaleRate = this.scaleValue / 100
+          //   const actualWidth = width * scaleRate
+          //   const actualHeight = height * scaleRate
+          //   const node4MainLayer = this.nodeStage.findOne('#mainLayer')
+          //   const canvas = document.createElement('canvas')
+          //   canvas.width = actualWidth
+          //   canvas.height = actualHeight
+          //   const ctx = canvas.getContext('2d')
+          //   const clipImg = new Image()
+          //   clipImg.onload = () => {
+          //     ctx.drawImage(
+          //       clipImg,
+          //       actualX,
+          //       actualY,
+          //       actualWidth,
+          //       actualHeight
+          //     )
+          //     console.log(canvas.toDataURL())
+          //   }
+          //   clipImg.src = node4MainLayer.toDataURL()
+          // } else this.downloadURI(img.src, 'stage.png')
         }
       })
     },
@@ -496,6 +520,12 @@ export default {
         height,
         isFixedSize: true
       })
+    },
+    dragEndEvt(e) {
+      const { target } = e
+      const { x, y } = target.getAbsolutePosition()
+      this.config4MainLayer.x = x
+      this.config4MainLayer.y = y
     }
   },
   watch: {},
