@@ -68,8 +68,10 @@
             @dragend="dragEndEvt"
             :config="config4MainLayer"
           >
-            <v-image ref="ref4MainImage" :config="config4MainImage" />
-            <v-line :config="configOutline" />
+            <v-group :config="{ id: 'mainGroup' }">
+              <v-image ref="ref4MainImage" :config="config4MainImage" />
+              <v-line :config="configOutline" />
+            </v-group>
             <v-rect
               v-if="isShowClipBox"
               :config="computedRect"
@@ -350,41 +352,41 @@ export default {
     },
     // 导出图片
     exportAsImageHandler() {
-      const node4MainLayer = this.nodeStage.findOne('#mainLayer')
-      const node4MainImage = this.nodeStage.findOne('#mainImage')
-      console.log(node4MainImage.getAbsolutePosition())
-      node4MainLayer.toImage({
-        callback: img => {
-          console.log(img)
-          this.downloadURI(img.src, Date.now() + '.png')
-          // const { width, height } = this.config4MainLayer.clip
-          // if (width > 0 && height > 0) {
-          //   const nodeShadowClipBox =
-          //     this.nodeStage.findOne('#shadowClipRectBox')
-          //   const { x: actualX, y: actualY } =
-          //     nodeShadowClipBox.getAbsolutePosition()
-          //   const scaleRate = this.scaleValue / 100
-          //   const actualWidth = width * scaleRate
-          //   const actualHeight = height * scaleRate
-          //   const node4MainLayer = this.nodeStage.findOne('#mainLayer')
-          //   const canvas = document.createElement('canvas')
-          //   canvas.width = actualWidth
-          //   canvas.height = actualHeight
-          //   const ctx = canvas.getContext('2d')
-          //   const clipImg = new Image()
-          //   clipImg.onload = () => {
-          //     ctx.drawImage(
-          //       clipImg,
-          //       actualX,
-          //       actualY,
-          //       actualWidth,
-          //       actualHeight
-          //     )
-          //     console.log(canvas.toDataURL())
-          //   }
-          //   clipImg.src = node4MainLayer.toDataURL()
-          // } else this.downloadURI(img.src, 'stage.png')
-        }
+      this.config4MainImage.strokeEnabled = false
+      this.$nextTick(() => {
+        const node4MainGroup = this.nodeStage.findOne('#mainGroup')
+        node4MainGroup.toImage({
+          callback: img => {
+            const { clip } = this.config4MainLayer
+            if (clip.width === 0 || clip.height === 0) {
+              this.downloadURI(img.src, Date.now() + '.png')
+            } else {
+              const { x, y, width, height } = node4MainGroup.getClientRect()
+              const node4ClipRectBox = this.nodeStage.findOne('#rectBox')
+              const {
+                x: clipX,
+                y: clipY,
+                width: clipWidth,
+                height: clipHeight
+              } = node4ClipRectBox.getClientRect()
+              const canvas4MainGroup = node4MainGroup.toCanvas()
+              const ctx4MainGroup = canvas4MainGroup.getContext('2d')
+              const imgData = ctx4MainGroup.getImageData(
+                clipX - x,
+                clipY - y,
+                clipWidth,
+                clipHeight
+              )
+              const canvas = document.createElement('canvas')
+              canvas.width = clipWidth
+              canvas.height = clipHeight
+              const ctx = canvas.getContext('2d')
+              ctx.putImageData(imgData, 0, 0)
+              this.downloadURI(canvas.toDataURL(), Date.now() + '.png')
+            }
+            this.config4MainImage.strokeEnabled = true
+          }
+        })
       })
     },
     stageMousedownEvt(e) {
