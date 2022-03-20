@@ -1,3 +1,4 @@
+/* eslint-disable vue/max-attributes-per-line */
 <template>
   <div class="clip-workbench-general-container">
     <div class="operation-area">
@@ -21,17 +22,53 @@
       >
         <el-button size="small" type="primary"> 上传图片 </el-button>
       </el-upload>
+      <el-popover
+        placement="bottom"
+        title="设置背景"
+        width="200"
+        trigger="click"
+      >
+        <el-button-group>
+          <el-upload
+            :multiple="false"
+            :show-file-list="false"
+            :on-success="handleSuccessBg"
+            :before-upload="beforeUpload"
+            class="editor-slide-upload"
+            action="https://httpbin.org/post"
+          >
+            <el-button size="small" type="primary"> 设置背景图片 </el-button>
+          </el-upload>
+          <el-popover placement="bottom" title="设置背景" trigger="click">
+            <chrome-picker
+              @ok="okBgColorsHandler"
+              v-model="bgColors"
+            ></chrome-picker>
+            <el-button
+              @click="bgImageConfig"
+              size="small"
+              type="primary"
+              slot="reference"
+            >
+              设置背景颜色
+            </el-button>
+          </el-popover>
+
+          <el-button @click="bgImageClear" size="small" type="primary">
+            清空背景
+          </el-button>
+        </el-button-group>
+
+        <el-button size="small" type="primary" slot="reference"
+          >设置背景</el-button
+        >
+      </el-popover>
       <el-button-group>
         <el-button @click="switchShowClipBox" size="small" type="primary">
           {{ isShowClipBox ? '清空裁剪框' : '添加裁剪框' }}
         </el-button>
         <el-button @click="confirmClipAction" size="small" type="primary">
           开始裁剪
-        </el-button>
-        <el-button @click="bgImageConfig" size="small" type="primary">
-          {{
-            config4MainImage.fillPatternImage ? '清空背景图片' : '设置背景图片'
-          }}
         </el-button>
         <el-button @click="exportAsImageHandler" size="small" type="primary">
           导出图片
@@ -51,6 +88,12 @@
             </el-button>
             <el-button @click="normalOneInch" size="small" type="primary">
               一寸
+            </el-button>
+            <el-button @click="littlerTwoInch" size="small" type="primary">
+              小二寸
+            </el-button>
+            <el-button @click="normalTwoInch" size="small" type="primary">
+              二寸
             </el-button>
           </el-button-group>
           <el-button size="small" type="primary" slot="reference"
@@ -89,11 +132,16 @@
 <script>
 import ClipSelectionBox from './clipSelectionBox.vue'
 import getImageOutline from 'image-outline'
+import { Photoshop } from 'vue-color'
 export default {
   name: 'ClipWorkbench',
-  components: { ClipSelectionBox },
+  components: {
+    ClipSelectionBox,
+    'chrome-picker': Photoshop
+  },
   data() {
     return {
+      bgColors: '',
       points: [],
       scaleStep: 10,
       minScaleVal: 10,
@@ -132,7 +180,7 @@ export default {
       config4MainImage: {
         image: null,
         fillPatternImage: null,
-
+        fill: '',
         x: 100,
         y: 100,
         width: 0,
@@ -239,9 +287,34 @@ export default {
     },
     // 上传成功的回调
     handleSuccess(response) {
+      this.config4MainLayer.clip = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      }
+      this.isShowClipBox = false
       this.loadingInstance.close()
       const { file } = response.files
       this.initImage(file)
+    },
+    // 上传背景图片成功回调
+    handleSuccessBg(response) {
+      this.loadingInstance.close()
+      const { file } = response.files
+      this.bgImageConfig(file)
+    },
+    // 更新背景颜色
+    updateBgColors(color) {
+      console.log(color)
+    },
+    // 背景颜色【确定】回调
+    okBgColorsHandler() {
+      console.log('okBgColorsHandler')
+      if (this.bgColors) {
+        const { hex8 } = this.bgColors
+        this.config4MainImage.fill = hex8
+      }
     },
     // 窗口窗口变化事件
     resize() {
@@ -328,17 +401,25 @@ export default {
       this.config4MainLayer.x = pos.x - mousePointTo.x * newScale
       this.config4MainLayer.y = pos.y - mousePointTo.y * newScale
     },
-    // 设置|清空背景图片
-    bgImageConfig() {
+    // 设置背景图片
+    bgImageConfig(url) {
       if (!this.config4MainImage.fillPatternImage) {
-        const bgImgUrl = require('@/assets/images/135458S3K.jpg')
+        // const bgImgUrl = require('@/assets/images/135458S3K.jpg')
         const img = new Image()
         img.onload = () => {
+          this.config4MainImage.fill = ''
           this.config4MainImage.fillPatternImage = img
         }
-        img.src = bgImgUrl
-      } else {
+        img.src = url
+      }
+    },
+    // 清空背景图片
+    bgImageClear() {
+      if (this.config4MainImage.fillPatternImage) {
         this.config4MainImage.fillPatternImage = null
+      }
+      if (this.config4MainImage.fill) {
+        this.config4MainImage.fill = ''
       }
     },
     downloadURI(uri, name) {
@@ -505,6 +586,9 @@ export default {
     },
     // 小一寸
     littlerOneInch() {
+      if (!this.isShowClipBox) {
+        this.switchShowClipBox()
+      }
       const width = 2.2 * 25
       const height = 3.2 * 25
       Object.assign(this.configRect, {
@@ -515,8 +599,37 @@ export default {
     },
     // 一寸
     normalOneInch() {
+      if (!this.isShowClipBox) {
+        this.switchShowClipBox()
+      }
       const width = 2.5 * 25
       const height = 3.5 * 25
+      Object.assign(this.configRect, {
+        width,
+        height,
+        isFixedSize: true
+      })
+    },
+    // 小二寸
+    littlerTwoInch() {
+      if (!this.isShowClipBox) {
+        this.switchShowClipBox()
+      }
+      const width = 3.3 * 25
+      const height = 4.8 * 25
+      Object.assign(this.configRect, {
+        width,
+        height,
+        isFixedSize: true
+      })
+    },
+    // 二寸
+    normalTwoInch() {
+      if (!this.isShowClipBox) {
+        this.switchShowClipBox()
+      }
+      const width = 3.5 * 25
+      const height = 5.3 * 25
       Object.assign(this.configRect, {
         width,
         height,
