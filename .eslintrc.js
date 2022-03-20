@@ -11,7 +11,7 @@ module.exports = {
   },
   extends: [
     'plugin:vue/essential',
-    'eslint:recommended', 
+    'eslint:recommended'
     //避免与 prettier 冲突
     // 'plugin:prettier/recommended'
   ],
@@ -22,7 +22,7 @@ module.exports = {
     'vue/max-attributes-per-line': [
       2,
       {
-        singleline: 10,
+        singleline: 20,
         multiline: {
           max: 1,
           allowFirstLine: false

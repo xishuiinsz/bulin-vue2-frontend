@@ -12,93 +12,38 @@
         @change="scaleRateChangeHandler"
         :disabled="!config4MainImage.image"
       ></el-input-number>
-      <el-upload
-        :multiple="false"
-        :show-file-list="false"
-        :on-success="handleSuccess"
-        :before-upload="beforeUpload"
-        class="editor-slide-upload"
-        action="https://httpbin.org/post"
-      >
+      <el-upload :multiple="false" :show-file-list="false" :on-success="handleSuccess" :before-upload="beforeUpload" class="editor-slide-upload" action="https://httpbin.org/post">
         <el-button size="small" type="primary"> 上传图片 </el-button>
       </el-upload>
-      <el-popover
-        placement="bottom"
-        title="设置背景"
-        width="200"
-        trigger="click"
-      >
+      <el-popover placement="bottom" title="设置背景" width="200" trigger="click">
         <el-button-group>
-          <el-upload
-            :multiple="false"
-            :show-file-list="false"
-            :on-success="handleSuccessBg"
-            :before-upload="beforeUpload"
-            class="editor-slide-upload"
-            action="https://httpbin.org/post"
-          >
+          <el-upload :multiple="false" :show-file-list="false" :on-success="handleSuccessBg" :before-upload="beforeUpload" class="editor-slide-upload" action="https://httpbin.org/post">
             <el-button size="small" type="primary"> 设置背景图片 </el-button>
           </el-upload>
           <el-popover placement="bottom" title="设置背景" trigger="click">
-            <chrome-picker
-              @ok="okBgColorsHandler"
-              v-model="bgColors"
-            ></chrome-picker>
-            <el-button
-              @click="bgImageConfig"
-              size="small"
-              type="primary"
-              slot="reference"
-            >
-              设置背景颜色
-            </el-button>
+            <chrome-picker @ok="okBgColorsHandler" v-model="bgColors"></chrome-picker>
+            <el-button style="margin-top: 4px" @click="bgImageConfig" size="small" type="primary" slot="reference"> 设置背景颜色 </el-button>
           </el-popover>
-
-          <el-button @click="bgImageClear" size="small" type="primary">
-            清空背景
-          </el-button>
+          <el-button style="margin-top: 4px" @click="bgImageClear" size="small" type="primary"> 清空背景 </el-button>
         </el-button-group>
 
-        <el-button size="small" type="primary" slot="reference"
-          >设置背景</el-button
-        >
+        <el-button size="small" type="primary" slot="reference">设置背景</el-button>
       </el-popover>
       <el-button-group>
         <el-button @click="switchShowClipBox" size="small" type="primary">
           {{ isShowClipBox ? '清空裁剪框' : '添加裁剪框' }}
         </el-button>
-        <el-button @click="confirmClipAction" size="small" type="primary">
-          开始裁剪
-        </el-button>
-        <el-button @click="exportAsImageHandler" size="small" type="primary">
-          导出图片
-        </el-button>
-        <el-button @click="strokeOutlineHandler" size="small" type="primary">
-          轮廓描边
-        </el-button>
-        <el-popover
-          placement="bottom"
-          title="请选择尺寸"
-          width="200"
-          trigger="click"
-        >
+        <el-button @click="confirmClipAction" size="small" type="primary"> 开始裁剪 </el-button>
+        <el-button @click="exportAsImageHandler" size="small" type="primary"> 导出图片 </el-button>
+        <el-button @click="strokeOutlineHandler" size="small" type="primary"> 轮廓描边 </el-button>
+        <el-popover placement="bottom" title="请选择尺寸" width="200" trigger="click">
           <el-button-group>
-            <el-button @click="littlerOneInch" size="small" type="primary">
-              小一寸
-            </el-button>
-            <el-button @click="normalOneInch" size="small" type="primary">
-              一寸
-            </el-button>
-            <el-button @click="littlerTwoInch" size="small" type="primary">
-              小二寸
-            </el-button>
-            <el-button @click="normalTwoInch" size="small" type="primary">
-              二寸
-            </el-button>
+            <el-button @click="littlerOneInch" size="small" type="primary"> 小一寸 </el-button>
+            <el-button @click="normalOneInch" size="small" type="primary"> 一寸 </el-button>
+            <el-button style="margin-top: 4px" @click="littlerTwoInch" size="small" type="primary"> 小二寸 </el-button>
+            <el-button style="margin-top: 4px" @click="normalTwoInch" size="small" type="primary"> 二寸 </el-button>
           </el-button-group>
-          <el-button size="small" type="primary" slot="reference"
-            >证件照</el-button
-          >
+          <el-button size="small" type="primary" slot="reference">证件照</el-button>
         </el-popover>
       </el-button-group>
     </div>
@@ -106,20 +51,12 @@
     <div class="canvas-outer-container">
       <div class="canvas-inner-container">
         <v-stage ref="stage" :config="stageSize">
-          <v-layer
-            ref="ref4MainLayer"
-            @dragend="dragEndEvt"
-            :config="config4MainLayer"
-          >
+          <v-layer ref="ref4MainLayer" @dragend="dragEndEvt" :config="config4MainLayer">
             <v-group :config="{ id: 'mainGroup' }">
               <v-image ref="ref4MainImage" :config="config4MainImage" />
               <v-line :config="configOutline" />
             </v-group>
-            <v-rect
-              v-if="isShowClipBox"
-              :config="computedRect"
-              ref="refShadowClipBox"
-            />
+            <v-rect v-if="isShowClipBox" :config="computedRect" ref="refShadowClipBox" />
           </v-layer>
           <v-layer v-if="isShowClipBox" ref="ref4CropBoxLayer">
             <clip-selection-box :dataRect="configRect" />
@@ -230,9 +167,7 @@ export default {
   },
   methods: {
     initCanvas() {
-      const canvasInnerContainer = document.querySelector(
-        '.canvas-inner-container'
-      )
+      const canvasInnerContainer = document.querySelector('.canvas-inner-container')
       this.stageSize.width = canvasInnerContainer.offsetWidth
       this.stageSize.height = canvasInnerContainer.offsetHeight
     },
@@ -253,29 +188,15 @@ export default {
     initScale(img) {
       this.config4MainImage.width = img.width
       this.config4MainImage.height = img.height
-      if (
-        img.width > this.stageSize.width ||
-        img.height > this.stageSize.height
-      ) {
-        if (
-          img.width / img.height >=
-          this.stageSize.width / this.stageSize.height
-        ) {
+      if (img.width > this.stageSize.width || img.height > this.stageSize.height) {
+        if (img.width / img.height >= this.stageSize.width / this.stageSize.height) {
           this.fitZoom = this.stageSize.width / img.width
           this.config4MainImage.x = 0
-          this.config4MainImage.y =
-            (this.stageSize.height -
-              this.config4MainImage.height * this.fitZoom) /
-            2 /
-            this.fitZoom
+          this.config4MainImage.y = (this.stageSize.height - this.config4MainImage.height * this.fitZoom) / 2 / this.fitZoom
         } else {
           this.fitZoom = this.stageSize.height / img.height
           this.config4MainImage.y = 0
-          this.config4MainImage.x =
-            (this.stageSize.width -
-              this.config4MainImage.width * this.fitZoom) /
-            2 /
-            this.fitZoom
+          this.config4MainImage.x = (this.stageSize.width - this.config4MainImage.width * this.fitZoom) / 2 / this.fitZoom
         }
       } else {
         this.config4MainImage.x = (this.stageSize.width - img.width) / 2
@@ -310,7 +231,6 @@ export default {
     },
     // 背景颜色【确定】回调
     okBgColorsHandler() {
-      console.log('okBgColorsHandler')
       if (this.bgColors) {
         const { hex8 } = this.bgColors
         this.config4MainImage.fill = hex8
@@ -329,6 +249,7 @@ export default {
       this.initCanvas()
       this.initScale(this.config4MainImage.image)
     },
+    // 是否添加裁剪框
     switchShowClipBox() {
       if (!this.isShowClipBox) {
         if (!this.config4MainImage.image) {
@@ -342,10 +263,8 @@ export default {
         const { x, y } = node4MainImage.getAbsolutePosition()
         this.configRect.x = x
         this.configRect.y = y
-        this.configRect.width =
-          this.config4MainImage.width * (this.scaleValue / 100)
-        this.configRect.height =
-          this.config4MainImage.height * (this.scaleValue / 100)
+        this.configRect.width = this.config4MainImage.width * (this.scaleValue / 100)
+        this.configRect.height = this.config4MainImage.height * (this.scaleValue / 100)
       }
     },
     // 手功调整 缩放率
@@ -442,22 +361,12 @@ export default {
             if (clip.width === 0 || clip.height === 0) {
               this.downloadURI(img.src, Date.now() + '.png')
             } else {
-              const { x, y, width, height } = node4MainGroup.getClientRect()
+              const { x, y } = node4MainGroup.getClientRect()
               const node4ClipRectBox = this.nodeStage.findOne('#rectBox')
-              const {
-                x: clipX,
-                y: clipY,
-                width: clipWidth,
-                height: clipHeight
-              } = node4ClipRectBox.getClientRect()
+              const { x: clipX, y: clipY, width: clipWidth, height: clipHeight } = node4ClipRectBox.getClientRect()
               const canvas4MainGroup = node4MainGroup.toCanvas()
               const ctx4MainGroup = canvas4MainGroup.getContext('2d')
-              const imgData = ctx4MainGroup.getImageData(
-                clipX - x,
-                clipY - y,
-                clipWidth,
-                clipHeight
-              )
+              const imgData = ctx4MainGroup.getImageData(clipX - x, clipY - y, clipWidth, clipHeight)
               const canvas = document.createElement('canvas')
               canvas.width = clipWidth
               canvas.height = clipHeight
@@ -649,9 +558,7 @@ export default {
     this.$nextTick(this.initImage(require('@/assets/images/girl08.png')))
     window.addEventListener('resize', this.resize)
     this.nodeStage = this.$refs.stage.getNode()
-    this.nodeStage
-      .container()
-      .addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
+    this.nodeStage.container().addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
     this.nodeStage.on('mousedown', this.stageMousedownEvt)
     this.nodeStage.on('mousemove', this.stageMousemoveEvt)
     this.nodeStage.on('mouseup', this.stageMouseupEvt)
