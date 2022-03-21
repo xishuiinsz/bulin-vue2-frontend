@@ -233,6 +233,11 @@ export default {
         width: cropBoxWidth / scaleRate,
         height: cropBoxHeight / scaleRate
       }
+      this.config4MainLayer.computedClip = nodeShadowClipBox.getClientRect()
+    },
+    // 重置裁剪
+    resetClipAction() {
+      this.config4MainLayer.clip = { x: 0, y: 0, width: 0, height: 0 }
     },
     // 开始缩放主图片
     scaleMainImage(pointer) {
@@ -294,7 +299,14 @@ export default {
             } else {
               const { x, y } = node4MainGroup.getClientRect()
               const node4ClipRectBox = this.nodeStage.findOne('#rectBox')
-              const { x: clipX, y: clipY, width: clipWidth, height: clipHeight } = node4ClipRectBox.getClientRect()
+              let { x: clipX, y: clipY, width: clipWidth, height: clipHeight } = node4ClipRectBox.getClientRect()
+              if (this.config4MainLayer.computedClip) {
+                const { x, y, width, height } = this.config4MainLayer.computedClip
+                clipX = x
+                clipY = y
+                clipWidth = width
+                clipHeight = height
+              }
               const canvas4MainGroup = node4MainGroup.toCanvas()
               const ctx4MainGroup = canvas4MainGroup.getContext('2d')
               const imgData = ctx4MainGroup.getImageData(clipX - x, clipY - y, clipWidth, clipHeight)

@@ -26,33 +26,36 @@
           </el-popover>
           <el-button style="margin-top: 4px" @click="bgImageClear" size="small" type="primary"> 清空背景 </el-button>
         </el-button-group>
-
         <el-button size="small" type="primary" slot="reference">设置背景</el-button>
       </el-popover>
-      <el-button-group>
-        <el-button @click="switchShowClipBox" size="small" type="primary">
-          {{ isShowClipBox ? '清空裁剪框' : '添加裁剪框' }}
-        </el-button>
-        <el-button @click="confirmClipAction" size="small" type="primary"> 开始裁剪 </el-button>
-        <el-button @click="strokeOutlineHandler" size="small" type="primary"> 轮廓描边 </el-button>
-        <el-popover placement="bottom" title="请选择尺寸" width="200" trigger="click">
-          <el-button-group>
-            <el-button @click="littlerOneInch" size="small" type="primary"> 小一寸 </el-button>
-            <el-button @click="normalOneInch" size="small" type="primary"> 一寸 </el-button>
-            <el-button style="margin-top: 4px" @click="littlerTwoInch" size="small" type="primary"> 小二寸 </el-button>
-            <el-button style="margin-top: 4px" @click="normalTwoInch" size="small" type="primary"> 二寸 </el-button>
-          </el-button-group>
-          <el-button size="small" type="primary" slot="reference">证件照</el-button>
-        </el-popover>
-        <el-popover placement="bottom" title="请选择记录" width="200" trigger="click">
-          <el-button-group>
-            <el-button @click="undoHandler" size="small" type="primary"> 上一步 </el-button>
-            <el-button @click="redoHandler" size="small" type="primary"> 下一步 </el-button>
-          </el-button-group>
-          <el-button size="small" type="primary" slot="reference">历史记录</el-button>
-        </el-popover>
-        <el-button @click="exportAsImageHandler" size="small" type="primary"> 导出图片 </el-button>
-      </el-button-group>
+      <el-popover placement="bottom" title="请选择动作" trigger="click">
+        <el-button-group>
+          <el-button @click="switchShowClipBox" size="small" type="primary">
+            {{ isShowClipBox ? '清空裁剪框' : '添加裁剪框' }}
+          </el-button>
+          <el-button @click="confirmClipAction" size="small" type="primary"> 开始裁剪 </el-button>
+          <el-button @click="resetClipAction" size="small" type="primary"> 重置裁剪 </el-button>
+        </el-button-group>
+        <el-button size="small" type="primary" slot="reference">裁剪图片</el-button>
+      </el-popover>
+      <el-button @click="strokeOutlineHandler" size="small" type="primary"> 轮廓描边 </el-button>
+      <el-popover placement="bottom" title="请选择尺寸" width="200" trigger="click">
+        <el-button-group>
+          <el-button @click="littlerOneInch" size="small" type="primary"> 小一寸 </el-button>
+          <el-button @click="normalOneInch" size="small" type="primary"> 一寸 </el-button>
+          <el-button style="margin-top: 4px" @click="littlerTwoInch" size="small" type="primary"> 小二寸 </el-button>
+          <el-button style="margin-top: 4px" @click="normalTwoInch" size="small" type="primary"> 二寸 </el-button>
+        </el-button-group>
+        <el-button size="small" type="primary" slot="reference">证件照</el-button>
+      </el-popover>
+      <el-popover placement="bottom" title="请选择记录" width="200" trigger="click">
+        <el-button-group>
+          <el-button @click="undoHandler" size="small" type="primary"> 上一步 </el-button>
+          <el-button @click="redoHandler" size="small" type="primary"> 下一步 </el-button>
+        </el-button-group>
+        <el-button size="small" type="primary" slot="reference">历史记录</el-button>
+      </el-popover>
+      <el-button @click="exportAsImageHandler" size="small" type="primary"> 导出图片 </el-button>
     </div>
 
     <div class="canvas-outer-container">
