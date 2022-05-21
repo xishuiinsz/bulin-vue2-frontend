@@ -194,6 +194,12 @@ export const asyncRoutes = [
         meta: { title: 'scale At Center', icon: 'edit' }
       },
       {
+        path: 'tableMaxHeigth',
+        component: () => import('@/specialTopic/tableMaxHeigth'),
+        name: 'TableMaxHeigth',
+        meta: { title: 'Table Max Heigth', icon: 'edit' }
+      },
+      {
         path: 'todoItem',
         component: () => import('@/specialTopic/todoItem'),
         name: 'TodoItem',
