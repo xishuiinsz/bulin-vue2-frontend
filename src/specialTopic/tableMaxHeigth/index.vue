@@ -26,6 +26,28 @@
             >
             </el-pagination>
           </div>
+          <div class="test">
+            范围式流程图
+            <div class="scoped-process-flow-container">
+              <div class="flow-item" :style="{ flex: flow.flowList.length }" v-for="(flow, mainIndex) in scopedProcessFlow" :key="mainIndex">
+                <div class="flow-wrap">
+                  <div class="label-wrap">
+                    <span class="flow-label">{{ flow.label }}</span>
+                  </div>
+                  <div class="node-list">
+                    <div class="node-item-wrap" v-for="node in flow.flowList" :key="node.id">
+                      <span class="node-label" v-if="Array.isArray(node)">
+                        <div v-for="subNode in node" :key="subNode.key">
+                          <span>{{ subNode.label }}</span>
+                        </div>
+                      </span>
+                      <span class="node-label" v-else>{{ node.label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -38,6 +60,55 @@ export default {
     return {
       tableMaxHeight: 740,
       currentPage: 1,
+      scopedProcessFlow: [
+        {
+          label: '流程范围1',
+          flowList: [
+            {
+              id: 1,
+              label: '节点1',
+              nextNode: 2
+            },
+            {
+              id: 2,
+              label: '节点2',
+              nextNode: 3
+            },
+            [
+              {
+                id: 3,
+                label: '节点3',
+                nextNode: 4
+              },
+              {
+                id: 5,
+                label: '节点5',
+                nextNode: null
+              }
+            ]
+          ]
+        },
+        {
+          label: '流程范围2',
+          flowList: [
+            {
+              id: 4,
+              label: '节点4',
+              nextNode: [5, 6]
+            }
+          ]
+        },
+        {
+          label: '流程范围3',
+          flowList: [
+            {
+              id: 6,
+              label: '节点6',
+              nextNode: null
+            }
+          ]
+        }
+      ],
       tableData: [
         {
           date: '2016-05-03',
@@ -169,6 +240,28 @@ export default {
     background-color: rgb(191, 203, 217);
     line-height: 60px;
     text-align: center;
+  }
+}
+.scoped-process-flow-container {
+  display: flex;
+  column-gap: 16px;
+  .flow-item {
+    .label-wrap {
+      background-color: lightblue;
+      text-align: center;
+      .flow-label {
+        height: 32px;
+        line-height: 32px;
+      }
+    }
+    .node-list {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 16px;
+      .node-item-wrap {
+        display: flex;
+      }
+    }
   }
 }
 </style>
