@@ -18,8 +18,12 @@ const modules = modulesFiles.keys().reduce((modules, modulePath) => {
 }, {})
 
 const store = new Vuex.Store({
+  state: {
+    flagUserDataChange: false // 用户是否修改数据信号
+  },
   modules,
-  getters
+  getters,
+  mutations: {}
 })
 
 export default store
