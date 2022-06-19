@@ -4,44 +4,32 @@
       <div class="main-content">
         <div class="header">我的代办</div>
         <div class="content-body">
-          <div class="table-general-container">
-            <el-table :max-height="tableMaxHeight" :data="tableData" style="width: 100%">
-              <el-table-column fixed prop="date" label="日期" width="150"> </el-table-column>
-              <el-table-column prop="name" label="姓名" width="120"> </el-table-column>
-              <el-table-column prop="province" label="省份" width="120"> </el-table-column>
-              <el-table-column prop="city" label="市区" width="120"> </el-table-column>
-              <el-table-column prop="address" label="地址"> </el-table-column>
-              <el-table-column prop="zip" label="邮编" width="120"> </el-table-column>
-            </el-table>
-          </div>
-          <div class="pager-general-container">
-            <el-pagination
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-              :current-page="currentPage"
-              :page-sizes="[7, 10, 30, 50]"
-              :page-size="7"
-              layout="total, sizes, prev, pager, next, jumper"
-              :total="400"
-            >
-            </el-pagination>
-          </div>
-          <div class="test">
+          <el-tabs v-model="activeName">
+            <el-tab-pane label="用户管理" name="first">用户管理</el-tab-pane>
+            <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+            <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
+            <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>
+          </el-tabs>
+          <div class="test" style="margin-top: 24px">
             范围式流程图
             <div class="scoped-process-flow-container">
               <div class="flow-item" :style="{ flex: flow.flowList.length }" v-for="(flow, mainIndex) in scopedProcessFlow" :key="mainIndex">
                 <div class="flow-wrap">
-                  <div class="label-wrap">
+                  <div class="flow-label-wrap">
                     <span class="flow-label">{{ flow.label }}</span>
                   </div>
-                  <div class="node-list">
+                  <div class="flow-node-wrap">
                     <div class="node-item-wrap" v-for="node in flow.flowList" :key="node.id">
-                      <span class="node-label" v-if="Array.isArray(node)">
-                        <div v-for="subNode in node" :key="subNode.key">
+                      <template v-if="Array.isArray(node)">
+                        <div class="node-item" v-for="subNode in node" :key="subNode.key">
+                          <div :id="subNode.id" class="node-icon"></div>
                           <span>{{ subNode.label }}</span>
                         </div>
-                      </span>
-                      <span class="node-label" v-else>{{ node.label }}</span>
+                      </template>
+                      <div class="node-item" v-else>
+                        <div :id="node.id" class="node-icon"></div>
+                        <span>{{ node.label }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -58,6 +46,8 @@
 export default {
   data() {
     return {
+      activeName: 'first',
+
       tableMaxHeight: 740,
       currentPage: 1,
       scopedProcessFlow: [
@@ -69,11 +59,18 @@ export default {
               label: '节点1',
               nextNode: 2
             },
-            {
-              id: 2,
-              label: '节点2',
-              nextNode: 3
-            },
+            [
+              {
+                id: 2,
+                label: '节点2',
+                nextNode: 3
+              },
+              {
+                id: 12,
+                label: '节点12',
+                nextNode: null
+              }
+            ],
             [
               {
                 id: 3,
@@ -170,8 +167,8 @@ export default {
     }
   },
   mounted() {
-    const contentBodyDom = this.$el.querySelector('.content-body')
-    this.tableMaxHeight = contentBodyDom.offsetHeight - 16 * 2 - (32 + 24)
+    const domNodes = this.$el.querySelectorAll('.node-icon')
+    console.log(domNodes)
   },
   methods: {
     handleSizeChange(val) {
@@ -246,7 +243,7 @@ export default {
   display: flex;
   column-gap: 16px;
   .flow-item {
-    .label-wrap {
+    .flow-label-wrap {
       background-color: lightblue;
       text-align: center;
       .flow-label {
@@ -254,12 +251,36 @@ export default {
         line-height: 32px;
       }
     }
-    .node-list {
+    .flow-node-wrap {
       display: flex;
       justify-content: space-around;
       margin-top: 16px;
       .node-item-wrap {
-        display: flex;
+        .node-item {
+          margin-top: 24px;
+        }
+        .node-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          .node-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: green;
+            border-radius: 50%;
+            margin-bottom: 16px;
+          }
+        }
+      }
+    }
+  }
+}
+::v-deep .el-tabs.el-tabs--top {
+  .el-tabs__nav-scroll {
+    .el-tabs__nav.is-top {
+      .el-tabs__item {
+        padding-right: 48px;
       }
     }
   }
