@@ -6,9 +6,9 @@
     </h4>
     <ele-tabs :beforeLeave="beforeLeave" v-model="activeName" @tab-click="handleClick">
       <ele-tab-pane label="用户管理" name="first">用户管理</ele-tab-pane>
-      <ele-tab-pane label="配置管理" name="second">配置管理</ele-tab-pane>
+      <ele-tab-pane label="配置管理配置管理" name="second">配置管理配置管理</ele-tab-pane>
       <ele-tab-pane label="角色管理" name="third">角色管理</ele-tab-pane>
-      <ele-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</ele-tab-pane>
+      <ele-tab-pane label="定时任务补偿定时任务补偿" name="fourth">定时任务补偿定时任务补偿</ele-tab-pane>
     </ele-tabs>
   </div>
 </template>
@@ -27,8 +27,8 @@ export default {
   },
   methods: {
     beforeLeave() {
-      this.$message.warning('已阻止切换Tab！')
-      return false
+      // this.$message.warning('随机阻止切换Tab！')
+      return true
     },
     handleClick(tab) {
       console.log(tab)
@@ -39,4 +39,8 @@ export default {
 <style lang="scss">
 @import './tabs.scss';
 @import './tab-pane.scss';
+.el-tabs__item.is-active {
+  font-weight: 1000;
+  font-family: Microsoft YaHei;
+}
 </style>
