@@ -200,6 +200,12 @@ export const asyncRoutes = [
         meta: { title: 'Table Max Heigth', icon: 'edit' }
       },
       {
+        path: 'myTabs',
+        component: () => import('@/specialTopic/myTabs'),
+        name: 'MyTabs',
+        meta: { title: 'My Tabs', icon: 'edit' }
+      },
+      {
         path: 'todoItem',
         component: () => import('@/specialTopic/todoItem'),
         name: 'TodoItem',
