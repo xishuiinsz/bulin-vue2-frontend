@@ -206,6 +206,12 @@ export const asyncRoutes = [
         meta: { title: 'My Tabs', icon: 'edit' }
       },
       {
+        path: 'aspectRatio',
+        component: () => import('@/specialTopic/aspectRatio'),
+        name: 'AspectRatio',
+        meta: { title: 'Aspect Ratio', icon: 'edit' }
+      },
+      {
         path: 'todoItem',
         component: () => import('@/specialTopic/todoItem'),
         name: 'TodoItem',
