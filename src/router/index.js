@@ -203,13 +203,19 @@ export const asyncRoutes = [
         path: 'myTabs',
         component: () => import('@/specialTopic/myTabs'),
         name: 'MyTabs',
-        meta: { title: 'My Tabs', icon: 'edit' }
+        meta: { title: 'My Tabs', icon: 'tab' }
       },
       {
         path: 'aspectRatio',
         component: () => import('@/specialTopic/aspectRatio'),
         name: 'AspectRatio',
-        meta: { title: 'Aspect Ratio', icon: 'edit' }
+        meta: { title: 'Aspect Ratio', icon: 'fullscreen' }
+      },
+      {
+        path: 'uploadProgress',
+        component: () => import('@/specialTopic/uploadProgress'),
+        name: 'UploadProgress',
+        meta: { title: 'Upload Progress', icon: 'guide' }
       },
       {
         path: 'todoItem',
