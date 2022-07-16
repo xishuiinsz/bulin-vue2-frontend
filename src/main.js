@@ -6,7 +6,7 @@ import 'normalize.css/normalize.css' // a modern alternative to CSS resets
 
 import Element from 'element-ui'
 import './styles/element-variables.scss'
-import enLang from 'element-ui/lib/locale/lang/en'// 如果使用中文语言包请默认支持，无需额外引入，请删除该依赖
+import enLang from 'element-ui/lib/locale/lang/en' // 如果使用中文语言包请默认支持，无需额外引入，请删除该依赖
 
 import '@/styles/index.scss' // global css
 
@@ -48,7 +48,46 @@ Object.keys(filters).forEach(key => {
 })
 
 Vue.config.productionTip = false
+Vue.directive('overLengthTip', {
+  inserted(el, binding) {
+    const input = el.querySelector('input')
 
+    const mouseenterHandler = () => {
+      if (!input.value || !input.value.trim()) return
+      let paddingLeft = getComputedStyle(input).paddingLeft
+      let paddingRight = getComputedStyle(input).paddingRight
+      const styleList = ['fontSize', 'fontFamily', 'fontWeight']
+      paddingLeft = parseInt(paddingLeft)
+      paddingRight = parseInt(paddingRight)
+      const text = input.value
+      const span = document.createElement('span')
+      span.style.position = 'fixed'
+      span.style.top = 0
+      span.style.transform = 'translateY(-100%)'
+      span.innerText = text
+      styleList.forEach(item => {
+        span.style[item] = getComputedStyle(input)[item]
+      })
+
+      const usedWidth = input.offsetWidth - paddingLeft - paddingRight
+      document.body.appendChild(span)
+      if (span.offsetWidth > usedWidth) {
+        // span.style.transform = 'translateY(0)'
+        const { x, y } = el.getBoundingClientRect()
+        span.style.top = `${y}px`
+        span.style.left = `${x}px`
+        span.classList.add('el-tooltip__popper')
+        span.classList.add('is-dark')
+        el.addEventListener('mouseleave', () => {
+          span.remove()
+        })
+      } else {
+        span.remove()
+      }
+    }
+    el.addEventListener('mouseenter', mouseenterHandler)
+  }
+})
 new Vue({
   el: '#app',
   router,
