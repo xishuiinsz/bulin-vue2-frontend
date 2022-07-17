@@ -17,7 +17,7 @@
           type="text"
           tabindex="1"
           autocomplete="on"
-          v-overLengthTip
+          v-overLengthTip="{ selector: '.el-input__inner', offset: { x: 10, y: 10 }, 'popper-class': 'my-test-tooltip', effect: 'dark' }"
         />
       </el-form-item>
 

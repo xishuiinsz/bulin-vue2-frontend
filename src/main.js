@@ -50,34 +50,51 @@ Object.keys(filters).forEach(key => {
 Vue.config.productionTip = false
 Vue.directive('overLengthTip', {
   inserted(el, binding) {
-    const input = el.querySelector('input')
-
-    const mouseenterHandler = () => {
-      if (!input.value || !input.value.trim()) return
-      let paddingLeft = getComputedStyle(input).paddingLeft
-      let paddingRight = getComputedStyle(input).paddingRight
+    console.log(binding)
+    let domCurrent = el
+    const { selector } = binding.value
+    if (typeof selector === 'string') {
+      domCurrent = el.querySelector(selector)
+    }
+    let text
+    if (domCurrent instanceof HTMLInputElement === true) {
+      text = domCurrent.value
+    } else {
+      text = domCurrent.innerText
+    }
+    const span = document.createElement('span')
+    if (!text) return
+    const computedIsOverLength = () => {
+      let paddingLeft = getComputedStyle(domCurrent).paddingLeft
+      let paddingRight = getComputedStyle(domCurrent).paddingRight
       const styleList = ['fontSize', 'fontFamily', 'fontWeight']
       paddingLeft = parseInt(paddingLeft)
       paddingRight = parseInt(paddingRight)
-      const text = input.value
-      const span = document.createElement('span')
       span.style.position = 'fixed'
       span.style.top = 0
       span.style.transform = 'translateY(-100%)'
       span.innerText = text
       styleList.forEach(item => {
-        span.style[item] = getComputedStyle(input)[item]
+        span.style[item] = getComputedStyle(domCurrent)[item]
       })
-
-      const usedWidth = input.offsetWidth - paddingLeft - paddingRight
+      const usedWidth = domCurrent.offsetWidth - paddingLeft - paddingRight
       document.body.appendChild(span)
-      if (span.offsetWidth > usedWidth) {
-        // span.style.transform = 'translateY(0)'
+      return span.offsetWidth > usedWidth
+    }
+    const mouseenterHandler = () => {
+      if (computedIsOverLength()) {
         const { x, y } = el.getBoundingClientRect()
         span.style.top = `${y}px`
         span.style.left = `${x}px`
         span.classList.add('el-tooltip__popper')
-        span.classList.add('is-dark')
+        if (typeof binding.value['effect'] === 'string') {
+          const { effect } = binding.value
+          span.classList.add(`is-${effect}`)
+        }
+
+        if (typeof binding.value['popper-class'] === 'string') {
+          span.classList.add(binding.value['popper-class'])
+        }
         el.addEventListener('mouseleave', () => {
           span.remove()
         })
