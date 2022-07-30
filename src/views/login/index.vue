@@ -95,7 +95,7 @@ export default {
     }
     return {
       loginForm: {
-        username: 'adminadminadminadminadminadminadminadminadminadminadminadminadminadminadminadmin',
+        username: 'admin',
         password: '111111'
       },
       loginRules: {
@@ -112,7 +112,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: function (route) {
+      handler: function(route) {
         const query = route.query
         if (query) {
           this.redirect = query.redirect

@@ -200,10 +200,10 @@ export const asyncRoutes = [
         meta: { title: 'Table Max Heigth', icon: 'edit' }
       },
       {
-        path: 'myTabs',
-        component: () => import('@/specialTopic/myTabs'),
-        name: 'MyTabs',
-        meta: { title: 'My Tabs', icon: 'tab' }
+        path: 'vOverTextTip',
+        component: () => import('@/specialTopic/vOverTextTip'),
+        name: 'VOverTextTip',
+        meta: { title: 'v-OverTextTip', icon: 'tab' }
       },
       {
         path: 'aspectRatio',
