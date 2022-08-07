@@ -194,10 +194,10 @@ export const asyncRoutes = [
         meta: { title: 'scale At Center', icon: 'edit' }
       },
       {
-        path: 'tableMaxHeigth',
-        component: () => import('@/specialTopic/tableMaxHeigth'),
+        path: 'svgMultiUses',
+        component: () => import('@/specialTopic/svgMultiUses'),
         name: 'TableMaxHeigth',
-        meta: { title: 'Table Max Heigth', icon: 'edit' }
+        meta: { title: 'SVG Multi Uses', icon: 'edit' }
       },
       {
         path: 'vOverTextTip',

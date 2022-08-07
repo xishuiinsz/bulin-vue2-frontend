@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const map = new Map()
-
+import PopperJS from 'element-ui/src/utils/popper.js'
 function main(el, binding) {
   let target = [el]
   if (typeof binding.value === 'object') {
@@ -35,7 +35,7 @@ function mouseenterHandler(binding) {
       txt = this.textContent
     }
     if (!txt || !txt.trim()) return
-    const fontStyleList = ['fontSize', 'fontWeight', 'fontFamily']
+    const fontStyleList = ['fontSize', 'fontWeight', 'fontFamily', 'lineHeight']
     const computedStyleList = ['borderLeftWidth', 'borderRightWidth', 'paddingLeft', 'paddingRight']
     let usedWidth = computedStyleList.map(item => getComputedStyle(this)[item])
     usedWidth = usedWidth.map(item => parseInt(item, 10))
@@ -43,24 +43,36 @@ function mouseenterHandler(binding) {
     // 计算出可用宽度
     const usefullWidth = this.offsetWidth - usedWidth
     const divTooltip = document.createElement('div')
-    divTooltip.style.position = 'absolute'
-    divTooltip.style.top = '-10000px'
     divTooltip.textContent = txt
     fontStyleList.forEach(item => {
       divTooltip.style[item] = getComputedStyle(this)[item]
     })
     document.body.appendChild(divTooltip)
     if (divTooltip.offsetWidth > usefullWidth) {
-      const { x, y } = this.getBoundingClientRect()
-      divTooltip.style.transform = 'translateY(-100%)'
+      fontStyleList.forEach(item => {
+        divTooltip.style[item] = ''
+      })
       divTooltip.classList.add('el-tooltip__popper')
       divTooltip.classList.add('is-dark')
-      divTooltip.setAttribute('x-placement', 'top')
-      attachArrow(divTooltip)
-      divTooltip.style.left = `${x}px`
-      divTooltip.style.top = `${y - 12}px`
-      const values = map.get(this)
-      Object.assign(values, { domToolTip: divTooltip })
+      const arrow = document.createElement('div')
+      arrow.setAttribute('data-popper-arrow', '')
+      divTooltip.appendChild(arrow)
+      const popperJS = new PopperJS(this, divTooltip, {
+        placement: 'top',
+        modifiers: [
+          {
+            name: 'arrow'
+          }
+        ]
+        // modifiers: [
+        //   {
+        //     name: 'arrow',
+        //     options: {
+        //       padding: 5 // 5px from the edges of the popper
+        //     }
+        //   }
+        // ]
+      })
     } else {
       divTooltip.remove()
     }
