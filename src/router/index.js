@@ -1,8 +1,21 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
 Vue.use(Router)
-
+const requireComponent = require.context('@/specialTopic', true, /index.vue$/, 'lazy-once')
+const generatRoutes = []
+requireComponent.keys().forEach(filename => {
+  const componentConfig = requireComponent(filename)
+  const newPath = filename.slice(2)
+  const arrPath = newPath.split('/')
+  const [name] = arrPath
+  const route = {
+    path: name,
+    component: () => componentConfig.default || componentConfig,
+    name,
+    meta: { title: name, icon: 'edit' }
+  }
+  generatRoutes.push(route)
+})
 /* Layout */
 import Layout from '@/layout'
 
@@ -174,56 +187,57 @@ export const asyncRoutes = [
   {
     path: '/specialTopic',
     component: Layout,
-    redirect: '/specialTopic/imgClip',
+    redirect: '/specialTopic/aspectRatio',
     name: 'SpecialTopic',
     meta: {
       title: 'Special Topic',
       icon: 'el-icon-s-help'
     },
-    children: [
-      {
-        path: 'imgClip',
-        component: () => import('@/specialTopic/imgClip'),
-        name: 'ImgClip',
-        meta: { title: 'image clip Case', icon: 'edit' }
-      },
-      {
-        path: 'scaleAtCenter',
-        component: () => import('@/specialTopic/scaleAtCenter'),
-        name: 'ScaleAtCenter',
-        meta: { title: 'scale At Center', icon: 'edit' }
-      },
-      {
-        path: 'svgMultiUses',
-        component: () => import('@/specialTopic/svgMultiUses'),
-        name: 'TableMaxHeigth',
-        meta: { title: 'SVG Multi Uses', icon: 'edit' }
-      },
-      {
-        path: 'vOverTextTip',
-        component: () => import('@/specialTopic/vOverTextTip'),
-        name: 'VOverTextTip',
-        meta: { title: 'v-OverTextTip', icon: 'tab' }
-      },
-      {
-        path: 'aspectRatio',
-        component: () => import('@/specialTopic/aspectRatio'),
-        name: 'AspectRatio',
-        meta: { title: 'Aspect Ratio', icon: 'fullscreen' }
-      },
-      {
-        path: 'uploadProgress',
-        component: () => import('@/specialTopic/uploadProgress'),
-        name: 'UploadProgress',
-        meta: { title: 'Upload Progress', icon: 'guide' }
-      },
-      {
-        path: 'todoItem',
-        component: () => import('@/specialTopic/todoItem'),
-        name: 'TodoItem',
-        meta: { title: 'Todo Item', icon: 'edit' }
-      }
-    ]
+    children: generatRoutes
+    // children: [
+    //   {
+    //     path: 'imgClip',
+    //     component: () => import('@/specialTopic/imgClip'),
+    //     name: 'ImgClip',
+    //     meta: { title: 'image clip Case', icon: 'edit' }
+    //   },
+    //   {
+    //     path: 'scaleAtCenter',
+    //     component: () => import('@/specialTopic/scaleAtCenter'),
+    //     name: 'ScaleAtCenter',
+    //     meta: { title: 'scale At Center', icon: 'edit' }
+    //   },
+    //   {
+    //     path: 'svgMultiUses',
+    //     component: () => import('@/specialTopic/svgMultiUses'),
+    //     name: 'TableMaxHeigth',
+    //     meta: { title: 'SVG Multi Uses', icon: 'edit' }
+    //   },
+    //   {
+    //     path: 'vOverTextTip',
+    //     component: () => import('@/specialTopic/vOverTextTip'),
+    //     name: 'VOverTextTip',
+    //     meta: { title: 'v-OverTextTip', icon: 'tab' }
+    //   },
+    //   {
+    //     path: 'aspectRatio',
+    //     component: () => import('@/specialTopic/aspectRatio'),
+    //     name: 'AspectRatio',
+    //     meta: { title: 'Aspect Ratio', icon: 'fullscreen' }
+    //   },
+    //   {
+    //     path: 'uploadProgress',
+    //     component: () => import('@/specialTopic/uploadProgress'),
+    //     name: 'UploadProgress',
+    //     meta: { title: 'Upload Progress', icon: 'guide' }
+    //   },
+    //   {
+    //     path: 'todoItem',
+    //     component: () => import('@/specialTopic/todoItem'),
+    //     name: 'TodoItem',
+    //     meta: { title: 'Todo Item', icon: 'edit' }
+    //   }
+    // ]
   },
   {
     path: '/icon',
