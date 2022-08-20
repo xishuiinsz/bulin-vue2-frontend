@@ -48,34 +48,21 @@ function mouseenterHandler(binding) {
       divTooltip.style[item] = getComputedStyle(this)[item]
     })
     document.body.appendChild(divTooltip)
-    if (divTooltip.offsetWidth > usefullWidth) {
-      fontStyleList.forEach(item => {
-        divTooltip.style[item] = ''
-      })
-      divTooltip.classList.add('el-tooltip__popper')
-      divTooltip.classList.add('is-dark')
-      const arrow = document.createElement('div')
-      arrow.setAttribute('data-popper-arrow', '')
-      divTooltip.appendChild(arrow)
-      const popperJS = new PopperJS(this, divTooltip, {
-        placement: 'top',
-        modifiers: [
-          {
-            name: 'arrow'
-          }
-        ]
-        // modifiers: [
-        //   {
-        //     name: 'arrow',
-        //     options: {
-        //       padding: 5 // 5px from the edges of the popper
-        //     }
-        //   }
-        // ]
-      })
-    } else {
+    if (divTooltip.offsetWidth <= usefullWidth) {
       divTooltip.remove()
+      return
     }
+    fontStyleList.forEach(item => {
+      divTooltip.style[item] = ''
+    })
+    divTooltip.classList.add('el-tooltip__popper')
+    divTooltip.classList.add('is-dark')
+    const arrow = document.createElement('div')
+    arrow.setAttribute('data-popper-arrow', '')
+    divTooltip.appendChild(arrow)
+    const popperJS = new PopperJS(this, divTooltip, {
+      placement: 'top'
+    })
   }
 }
 // 添加箭头
