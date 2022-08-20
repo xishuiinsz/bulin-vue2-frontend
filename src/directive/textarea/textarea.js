@@ -1,7 +1,8 @@
 /**
  *  指令常规使用方法：v-textarea="{ prop: 'mark', row: row }"
- *  prop指定当前input关联的属性，
- *  row指定当前行数据
+ *  prop指定当前input关联的属性，必填项
+ *  row指定当前行数据，必填项
+ *  当下仅支持el-input组件或原生input元素
  */
 // 保存数据
 const wm = new WeakMap()
@@ -20,7 +21,12 @@ function focusInputEvt() {
   textareaWrap.classList.add('el-textarea')
   const elTextarea = document.createElement('textarea')
   elTextarea.value = this.value
-  elTextarea.setAttribute('rows', 3)
+  let rows = 3
+  const op = wm.get(this)
+  if (op.rows) {
+    rows = op.rows
+  }
+  elTextarea.setAttribute('rows', rows)
   elTextarea.setAttribute('autocomplete', 'off')
   elTextarea.style.minHeight = '100px'
   elTextarea.classList.add('el-textarea__inner')
@@ -39,11 +45,17 @@ function focusInputEvt() {
 }
 // 主函数
 function main(el, binding) {
+  if (el instanceof HTMLInputElement) {
+    binding.value && wm.set(el, binding.value)
+    el.removeEventListener('focus', focusInputEvt)
+    return
+  }
   const [child] = el.children
   if (child && child instanceof HTMLInputElement) {
     binding.value && wm.set(child, binding.value)
     child.addEventListener('focus', focusInputEvt)
   }
+  throw new Error(`${binding.rawName}指令当前不支持非Input元素`)
 }
 export default {
   inserted(el, binding) {
@@ -55,9 +67,13 @@ export default {
   },
   update(el, binding) {},
   unbind(el) {
+    if (el instanceof HTMLInputElement) {
+      el.removeEventListener('focus', focusInputEvt)
+    }
     const [child] = el.children
     if (child && child instanceof HTMLInputElement) {
       child.removeEventListener('focus', focusInputEvt)
+      return
     }
   }
 }
