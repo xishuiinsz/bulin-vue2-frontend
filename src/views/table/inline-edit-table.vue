@@ -45,7 +45,12 @@
       <el-table-column width="200px" label="mark">
         <template slot-scope="{ row }">
           <template v-if="row.edit">
-            <el-input v-textarea="{ prop: 'mark', row: row }" v-model="row.mark" class="edit-input" size="small" />
+            <el-input
+              v-textarea="{ prop: 'mark', row: row, rows: 4, 'custom-class': 'my-textarea' }"
+              v-model="row.mark"
+              class="edit-input"
+              size="small"
+            />
           </template>
           <span v-else>{{ row.mark }}</span>
         </template>

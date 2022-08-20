@@ -23,13 +23,17 @@ function focusInputEvt() {
   elTextarea.value = this.value
   let rows = 3
   const op = wm.get(this)
-  if (op.rows) {
-    rows = op.rows
+  if (op) {
+    if (op.rows) {
+      rows = op.rows
+    }
+    const customClass = op['customClass'] || op['custom-class']
+    customClass && textareaWrap.classList.add(customClass)
   }
+  elTextarea.classList.add('el-textarea__inner')
   elTextarea.setAttribute('rows', rows)
   elTextarea.setAttribute('autocomplete', 'off')
   elTextarea.style.minHeight = '100px'
-  elTextarea.classList.add('el-textarea__inner')
   textareaWrap.appendChild(elTextarea)
   textareaWrap.style.position = 'absolute'
   const { x, y } = this.getBoundingClientRect()
@@ -54,6 +58,7 @@ function main(el, binding) {
   if (child && child instanceof HTMLInputElement) {
     binding.value && wm.set(child, binding.value)
     child.addEventListener('focus', focusInputEvt)
+    return
   }
   throw new Error(`${binding.rawName}指令当前不支持非Input元素`)
 }
