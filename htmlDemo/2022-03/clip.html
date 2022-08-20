@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script type="text/javascript">
+    const imgLink = '../../src/assets/images/girl01.png'
+    const points = [
+      { x: 0, y: 0 },
+      { x: 0.5, y: 0 },
+      { x: 0.5, y: 0.5 }
+    ]
+
+    function getImg(src) {
+      return new Promise(resolve => {
+        const img = new Image()
+        img.addEventListener('load', () => resolve(img))
+        img.addEventListener('error', () => resolve(null))
+        img.src = src
+      })
+    }
+    function getRect(points) {
+      const x = points.map(it => it.x)
+      const y = points.map(it => it.y)
+      const minX = Math.min(...x)
+      const maxX = Math.max(...x)
+      const minY = Math.min(...y)
+      const maxY = Math.max(...y)
+      console.log(x, y)
+      return {
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY
+      }
+    }
+    function createCanvas({ width, height }) {
+      const cvs = document.createElement('canvas')
+      const ctx = cvs.getContext('2d')
+      cvs.width = width
+      cvs.height = height
+      cvs.style.cssText = `
+         height: ${height}px;
+         width: ${width}px;
+         `
+      return {
+        cvs,
+        ctx
+      }
+    }
+    function outputImage(imageData, { width, height }) {
+      const { cvs, ctx } = createCanvas({ width, height })
+      ctx.putImageData(imageData, 0, 0)
+      const src = cvs.toDataURL('image/png')
+      return getImg(src)
+    }
+    async function clip({ imgLink, points }) {
+      const img = await getImg(imgLink)
+      console.log(img, img.width, img.height)
+      if (!img || !img.height || points.length < 3) return
+      const { cvs, ctx } = createCanvas(img)
+      const { width, height } = img
+      points = points.map(it => ({ x: it.x * width, y: it.y * height }))
+      ctx.beginPath()
+      const [point] = points
+      console.log(point, points)
+      ctx.moveTo(point.x, point.y)
+      points.forEach(point => {
+        ctx.lineTo(point.x, point.y)
+      })
+      ctx.closePath()
+      ctx.clip()
+      ctx.drawImage(img, 0, 0)
+      const rect = getRect(points)
+      console.log(rect)
+      const data = ctx.getImageData(rect.x, rect.y, rect.width, rect.height)
+      const image = await outputImage(data, rect)
+      document.body.appendChild(cvs)
+      document.body.appendChild(image)
+    }
+    clip({
+      imgLink,
+      points
+    })
+  </script>
+</html>
