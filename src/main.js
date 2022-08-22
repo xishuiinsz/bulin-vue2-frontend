@@ -24,6 +24,8 @@ import VueKonva from 'vue-konva'
 Vue.use(VueKonva)
 import Fragment from 'vue-fragment'
 Vue.use(Fragment.Plugin)
+import highlight from './directive/highlight'
+Vue.use(highlight)
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -48,63 +50,7 @@ Object.keys(filters).forEach(key => {
 })
 
 Vue.config.productionTip = false
-// Vue.directive('overLengthTip', {
-//   inserted(el, binding) {
-//     console.log(binding)
-//     let domCurrent = el
-//     const { selector } = binding.value
-//     if (typeof selector === 'string') {
-//       domCurrent = el.querySelector(selector)
-//     }
-//     let text
-//     if (domCurrent instanceof HTMLInputElement === true) {
-//       text = domCurrent.value
-//     } else {
-//       text = domCurrent.innerText
-//     }
-//     const span = document.createElement('span')
-//     if (!text) return
-//     const computedIsOverLength = () => {
-//       let paddingLeft = getComputedStyle(domCurrent).paddingLeft
-//       let paddingRight = getComputedStyle(domCurrent).paddingRight
-//       const styleList = ['fontSize', 'fontFamily', 'fontWeight']
-//       paddingLeft = parseInt(paddingLeft)
-//       paddingRight = parseInt(paddingRight)
-//       span.style.position = 'fixed'
-//       span.style.top = 0
-//       span.style.transform = 'translateY(-100%)'
-//       span.innerText = text
-//       styleList.forEach(item => {
-//         span.style[item] = getComputedStyle(domCurrent)[item]
-//       })
-//       const usedWidth = domCurrent.offsetWidth - paddingLeft - paddingRight
-//       document.body.appendChild(span)
-//       return span.offsetWidth > usedWidth
-//     }
-//     const mouseenterHandler = () => {
-//       if (computedIsOverLength()) {
-//         const { x, y } = el.getBoundingClientRect()
-//         span.style.top = `${y}px`
-//         span.style.left = `${x}px`
-//         span.classList.add('el-tooltip__popper')
-//         if (typeof binding.value['effect'] === 'string') {
-//           const { effect } = binding.value
-//           span.classList.add(`is-${effect}`)
-//         }
 
-//         if (typeof binding.value['popper-class'] === 'string') {
-//           span.classList.add(binding.value['popper-class'])
-//         }
-//         el.addEventListener('mouseleave', () => {
-//           span.remove()
-//         })
-//       } else {
-//         span.remove()
-//       }
-//     }
-//     el.addEventListener('mouseenter', mouseenterHandler)
-//   }
-// })
 new Vue({
   el: '#app',
   router,
