@@ -1,7 +1,9 @@
 /**
- *  指令常规使用方法：v-textarea="{ prop: 'mark', row: row }"
- *  prop指定当前input关联的属性，必填项
+ *  指令常规使用方法：v-textarea="{ prop: 'mark', row: row, blur: function(){} }"
+ *  prop指定当前input关联的数据的属性名，必填项
  *  row指定当前行数据，必填项
+ *  blur指定文本域失焦时的回调
+ *  rows指定文本域的行数
  *  当下仅支持el-input组件或原生input元素
  */
 // 保存数据
@@ -9,11 +11,12 @@ const wm = new WeakMap()
 // 文本域失焦事件
 function textareaBlurevt() {
   const input = wm.get(this)
-  const value = wm.get(input)
-  if (value) {
-    Object.assign(value.row, { [value.prop]: this.value })
+  const op = wm.get(input)
+  if (op) {
+    Object.assign(op.row, { [op.prop]: this.value })
+    typeof op.blur === 'function' && op.blur(op.prop, op.row)
   }
-  this.parentElement && this.parentElement.remove()
+  this.parentElement.remove()
 }
 // 输入框聚焦事件
 function focusInputEvt() {
@@ -37,8 +40,8 @@ function focusInputEvt() {
   textareaWrap.appendChild(elTextarea)
   textareaWrap.style.position = 'absolute'
   const { x, y } = this.getBoundingClientRect()
-  textareaWrap.style.left = `${x + 1}px`
-  textareaWrap.style.top = `${y + 1}px`
+  textareaWrap.style.left = `${x}px`
+  textareaWrap.style.top = `${y}px`
   textareaWrap.style.width = getComputedStyle(this).width
   document.body.appendChild(textareaWrap)
   setTimeout(() => {
@@ -51,22 +54,25 @@ function focusInputEvt() {
 function main(el, binding) {
   if (el instanceof HTMLInputElement) {
     binding.value && wm.set(el, binding.value)
-    el.removeEventListener('focus', focusInputEvt)
+    el.addEventListener('focus', focusInputEvt)
     return
   }
-  const [child] = el.children
-  if (child && child instanceof HTMLInputElement) {
-    binding.value && wm.set(child, binding.value)
-    child.addEventListener('focus', focusInputEvt)
+  const input = el.querySelector('input')
+  if (input && input instanceof HTMLInputElement) {
+    binding.value && wm.set(input, binding.value)
+    input.addEventListener('focus', focusInputEvt)
     return
   }
-  throw new Error(`${binding.rawName}指令当前不支持非Input元素`)
+  throw new Error(`[${binding.rawName}]指令当前不支持非Input元素`)
 }
 export default {
   inserted(el, binding) {
+    if (!binding.value) {
+      throw new Error(`[${binding.rawName}]需要指定参数`)
+    }
     const keys = ['prop', 'row']
-    if (!binding.value || keys.some(key => Object.prototype.hasOwnProperty.call(binding.value, key) === false)) {
-      throw new Error(`${keys.join('|')} 未指定`)
+    if (keys.some(key => Object.prototype.hasOwnProperty.call(binding.value, key) === false)) {
+      throw new Error(`[${binding.rawName}]需要指定参数${keys.join('、')}`)
     }
     main(el, binding)
   },
@@ -74,11 +80,11 @@ export default {
   unbind(el) {
     if (el instanceof HTMLInputElement) {
       el.removeEventListener('focus', focusInputEvt)
-    }
-    const [child] = el.children
-    if (child && child instanceof HTMLInputElement) {
-      child.removeEventListener('focus', focusInputEvt)
       return
+    }
+    const input = el.querySelector('input')
+    if (input && input instanceof HTMLInputElement) {
+      input.removeEventListener('focus', focusInputEvt)
     }
   }
 }

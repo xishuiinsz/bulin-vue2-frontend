@@ -36,7 +36,7 @@
       <el-table-column min-width="300px" label="Title">
         <template slot-scope="{ row }">
           <template v-if="row.edit">
-            <el-input v-textarea="{ prop: 'title', row: row }" v-model="row.title" class="edit-input" size="small" />
+            <el-input v-textarea="{ prop: 'title', row: row, blur: textareaBlurEvt }" v-model="row.title" class="edit-input" size="small" />
             <el-button class="cancel-btn" size="small" icon="el-icon-refresh" type="warning" @click="cancelEdit(row)"> cancel </el-button>
           </template>
           <span v-else>{{ row.title }}</span>
@@ -96,6 +96,11 @@ export default {
     this.getList()
   },
   methods: {
+    // 文本域失焦事件
+    textareaBlurEvt(key, row) {
+      // 根据需求决定是否具体实现
+      // this.$set(row, 'edit', false)
+    },
     async getList() {
       this.listLoading = true
       const { data } = await fetchList(this.listQuery)
