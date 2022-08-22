@@ -19,7 +19,7 @@ function textareaBlurevt() {
   this.parentElement.remove()
 }
 // 输入框聚焦事件
-function focusInputEvt() {
+function inputFocusEvt() {
   const textareaWrap = document.createElement('div')
   textareaWrap.classList.add('el-textarea')
   const elTextarea = document.createElement('textarea')
@@ -54,13 +54,13 @@ function focusInputEvt() {
 function main(el, binding) {
   if (el instanceof HTMLInputElement) {
     binding.value && wm.set(el, binding.value)
-    el.addEventListener('focus', focusInputEvt)
+    el.addEventListener('focus', inputFocusEvt)
     return
   }
   const input = el.querySelector('input')
   if (input && input instanceof HTMLInputElement) {
     binding.value && wm.set(input, binding.value)
-    input.addEventListener('focus', focusInputEvt)
+    input.addEventListener('focus', inputFocusEvt)
     return
   }
   throw new Error(`[${binding.rawName}]指令当前不支持非Input元素`)
@@ -79,12 +79,12 @@ export default {
   update(el, binding) {},
   unbind(el) {
     if (el instanceof HTMLInputElement) {
-      el.removeEventListener('focus', focusInputEvt)
+      el.removeEventListener('focus', inputFocusEvt)
       return
     }
     const input = el.querySelector('input')
     if (input && input instanceof HTMLInputElement) {
-      input.removeEventListener('focus', focusInputEvt)
+      input.removeEventListener('focus', inputFocusEvt)
     }
   }
 }
