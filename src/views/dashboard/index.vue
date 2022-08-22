@@ -43,7 +43,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { marked } from 'marked'
+// import { marked } from 'marked'
 // import changelog from './changelog.md'
 export default {
   name: 'Dashboard',
