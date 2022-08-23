@@ -8,7 +8,7 @@
               <span>更新日志</span>
             </div>
             <div class="change-log">
-              <div v-highlight v-html="logs" class="markdown-content"></div>
+              <vue-markdown v-highlight :source="mdSources"></vue-markdown>
             </div>
           </el-card>
         </div>
@@ -43,13 +43,14 @@
 
 <script>
 import { mapGetters } from 'vuex'
-// import { marked } from 'marked'
-// import changelog from './changelog.md'
+import VueMarkdown from 'vue-markdown'
+import axios from 'axios'
 export default {
   name: 'Dashboard',
-  components: {},
+  components: { VueMarkdown },
   data () {
     return {
+      mdSources: '',
       logs: '',
       currentRole: 'adminDashboard'
     }
@@ -58,7 +59,11 @@ export default {
     ...mapGetters(['roles'])
   },
   mounted () {
-    // console.log(marked(logs))
+    axios.get('/changelog.md').then(resp => {
+      if (resp && resp.data) {
+        this.mdSources = resp.data
+      }
+    })
   }
 }
 </script>
