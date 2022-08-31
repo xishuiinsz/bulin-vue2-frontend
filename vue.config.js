@@ -1,7 +1,7 @@
 'use strict'
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
-
+const { pinyin } = require('pinyin')
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
@@ -127,5 +127,22 @@ module.exports = {
       // https:// webpack.js.org/configuration/optimization/#optimizationruntimechunk
       config.optimization.runtimeChunk('single')
     })
+    config.module
+      .rule('images')
+      .use('url-loader')
+      .tap(options =>
+        Object.assign(options, {
+          limit: 4096,
+          fallback: {
+            loader: 'file-loader',
+            options: {
+              name: function (filePath) {
+                return 'static/img/[name]-张小刚.[ext]'
+              }
+            }
+          }
+        })
+      )
+      .end()
   }
 }
