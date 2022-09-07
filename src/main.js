@@ -26,6 +26,7 @@ import Fragment from 'vue-fragment'
 Vue.use(Fragment.Plugin)
 import highlight from './directive/highlight'
 Vue.use(highlight)
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
