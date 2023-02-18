@@ -37,11 +37,12 @@ export default {
 
   .more-button {
     position: absolute;
-    right: 16px;
-    bottom: 6px;
+    right: 12px;
+    bottom: 8px;
   }
   .collapsed-form-outer {
     position: absolute;
+    width: 100%;
   }
 }
 </style>
