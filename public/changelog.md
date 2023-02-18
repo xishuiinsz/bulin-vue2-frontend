@@ -16,5 +16,13 @@
     ```
       src\views\table\inline-edit-table.vue
     ```
+#### 新特性
+
+- 新增[更多]表单按钮
+  - 典型应用场景：表格中的上方的筛选表单，将非重点表单项使用【更多】折叠起来
+  - demo组件路径：
+    ```
+      src\views\table\complex-table.vue
+    ```
 
 
