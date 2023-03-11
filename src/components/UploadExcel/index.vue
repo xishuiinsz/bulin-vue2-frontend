@@ -1,11 +1,9 @@
 <template>
   <div>
-    <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick">
+    <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick" />
     <div class="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
       Drop excel file here or
-      <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
-        Browse
-      </el-button>
+      <el-button :loading="loading" style="margin-left: 16px" size="mini" type="primary" @click="handleUpload"> Browse </el-button>
     </div>
   </div>
 </template>
@@ -16,7 +14,7 @@ import XLSX from 'xlsx'
 export default {
   props: {
     beforeUpload: Function, // eslint-disable-line
-    onSuccess: Function// eslint-disable-line
+    onSuccess: Function // eslint-disable-line
   },
   data() {
     return {
@@ -84,11 +82,14 @@ export default {
         const reader = new FileReader()
         reader.onload = e => {
           const data = e.target.result
-          const workbook = XLSX.read(data, { type: 'array' })
+          const workbook = XLSX.read(data, { type: 'array', cellStyles: true })
           const firstSheetName = workbook.SheetNames[0]
           const worksheet = workbook.Sheets[firstSheetName]
           const header = this.getHeaderRow(worksheet)
           const results = XLSX.utils.sheet_to_json(worksheet)
+          results.forEach(item => {
+            Object.assign(item, { rowId: crypto.randomUUID() })
+          })
           this.generateData({ header, results })
           this.loading = false
           resolve()
@@ -97,17 +98,24 @@ export default {
       })
     },
     getHeaderRow(sheet) {
+      const colSizeList = sheet['!cols'].map(item => item.wpx)
       const headers = []
       const range = XLSX.utils.decode_range(sheet['!ref'])
       let C
       const R = range.s.r
       /* start in the first row */
-      for (C = range.s.c; C <= range.e.c; ++C) { /* walk every column in the range */
+      for (C = range.s.c; C <= range.e.c; ++C) {
+        /* walk every column in the range */
         const cell = sheet[XLSX.utils.encode_cell({ c: C, r: R })]
         /* find the cell in the first row */
         let hdr = 'UNKNOWN ' + C // <-- replace with your desired default
         if (cell && cell.t) hdr = XLSX.utils.format_cell(cell)
-        headers.push(hdr)
+        const op = {
+          title: hdr,
+          width: colSizeList[C],
+          colId: crypto.randomUUID()
+        }
+        headers.push(op)
       }
       return headers
     },
@@ -119,11 +127,11 @@ export default {
 </script>
 
 <style scoped>
-.excel-upload-input{
+.excel-upload-input {
   display: none;
   z-index: -9999;
 }
-.drop{
+.drop {
   border: 2px dashed #bbb;
   width: 600px;
   height: 160px;

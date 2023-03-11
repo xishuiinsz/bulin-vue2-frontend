@@ -1,0 +1,84 @@
+$operation-item-size: 20px;
+
+.table-layer-item {
+    position: absolute;
+
+    .el-table {
+        min-width: 80px;
+
+        &.my-custom-table {
+            display: inline-block;
+            width: auto;
+        }
+    }
+
+    .table-operation-container {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        .table-col-operation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translateY(-100%);
+            display: flex;
+            pointer-events: initial;
+
+            .table-col-item {
+                background-color: green;
+                height: $operation-item-size;
+
+                .col-item-action {
+                    display: inline-block;
+                    width: 33.33%;
+                    height: 100%;
+                    cursor: pointer;
+
+                    &.left {
+                        text-align: left;
+                    }
+
+                    &.center {
+                        text-align: center;
+                    }
+
+                    &.right {
+                        text-align: right;
+                    }
+
+                    &:hover {
+                        background-color: pink;
+                    }
+                }
+            }
+        }
+
+        .table-row-operation {
+            width: $operation-item-size;
+            height: calc(44px * 3);
+            background-color: green;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            transform: translateX(-100%);
+            pointer-events: initial;
+
+            .table-row-item {
+                height: 44px;
+
+                .row-item-action {
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: pink;
+                    }
+                }
+            }
+        }
+    }
+}
