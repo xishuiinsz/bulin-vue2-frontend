@@ -9,6 +9,40 @@ $operation-item-size: 20px;
         &.my-custom-table {
             display: inline-block;
             width: auto;
+
+            tr {
+                &.is-selected {
+                    position: relative;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        width: calc(100% - 1px);
+                        height: calc(100% - 1px);
+                        top: 0;
+                        left: 0;
+                        border: 1px dashed red;
+                    }
+                }
+            }
+
+            td {
+                outline: none;
+
+                &.is-selected {
+                    position: relative;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        top: 0;
+                        left: 0;
+                        border: 1px dashed red;
+                    }
+                }
+            }
         }
     }
 

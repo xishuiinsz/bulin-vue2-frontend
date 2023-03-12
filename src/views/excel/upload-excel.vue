@@ -1,8 +1,29 @@
 <template>
   <div class="app-container">
-    <upload-excel-component :on-success="handleSuccess" :before-upload="beforeUpload" />
+    <div style="display: flex; gap: 24px">
+      <upload-excel-component :on-success="handleSuccess" :before-upload="beforeUpload" />
+      <el-form :inline="true" class="demo-form-inline">
+        <el-form-item label="背景色">
+          <el-color-picker @change="bgColoChange" v-model="colorValue"></el-color-picker>
+        </el-form-item>
+      </el-form>
+    </div>
+
     <div v-if="tableData.length" class="table-layer-item" :style="tableLayerStyle">
-      <el-table :key="keyTable" class="my-custom-table" @cell-click="cellClick" :data="tableData" border highlight-current-row style="">
+      <el-table
+        :key="keyTable"
+        class="my-custom-table"
+        :header-row-style="headerRowStyle"
+        :row-style="rowStyle"
+        :cell-style="cellStyle"
+        @cell-click="cellClick"
+        :cell-class-name="cellClassName"
+        :row-class-name="rowClassName"
+        :data="tableData"
+        border
+        highlight-current-row
+        style=""
+      >
         <el-table-column
           v-for="item of tableHeader"
           :width="item.width"
@@ -32,71 +53,5 @@
   </div>
 </template>
 
-<script>
-import UploadExcelComponent from '@/components/UploadExcel/index.vue'
-import uniqueId from 'lodash/uniqueId'
-export default {
-  name: 'UploadExcel',
-  components: { UploadExcelComponent },
-  data() {
-    return {
-      keyTable: 0,
-      tableLayerData: {
-        x: 300,
-        y: 400
-      },
-      tableData: [],
-      tableHeader: []
-    }
-  },
-  computed: {
-    tableLayerStyle() {
-      const { x, y } = this.tableLayerData
-      return {
-        left: `${x}px`,
-        top: `${y}px`
-      }
-    }
-  },
-  methods: {
-    cellClick(row, column, cell, event) {
-      console.log(column)
-    },
-    beforeUpload(file) {
-      const isLt1M = file.size / 1024 / 1024 < 1
-
-      if (isLt1M) {
-        return true
-      }
-
-      this.$message({
-        message: 'Please do not upload files larger than 1m in size.',
-        type: 'warning'
-      })
-      return false
-    },
-    handleSuccess({ results, header }) {
-      this.tableData = results
-      this.tableHeader = header
-    },
-    // 左侧新增列
-    addColByLeft(item) {},
-    // 删除列
-    delCol(item) {
-      const index = this.tableHeader.findIndex(el => el === item)
-      this.tableHeader.splice(index, 1)
-      this.keyTable++
-    },
-    // 右侧新增列
-    addColByRight(item) {
-      const index = this.tableHeader.findIndex(el => el === item)
-      this.tableHeader.splice(index + 1, 0, {
-        width: 100,
-        colId: crypto.randomUUID(),
-        title: `标题${uniqueId()}`
-      })
-    }
-  }
-}
-</script>
+<script src="./table.js"></script>
 <style lang="scss" src="./upload-excel.scss" />

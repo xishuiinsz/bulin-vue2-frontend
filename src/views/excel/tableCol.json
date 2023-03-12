@@ -1,0 +1,32 @@
+[
+    {
+        "title": "序号",
+        "width": 95,
+        "colId": "0e1af1d2-145a-4eda-8350-6c349e42ee53"
+    },
+    {
+        "title": "项目",
+        "width": 120,
+        "colId": "38fb022c-cca7-43b6-abfb-efe176edcace"
+    },
+    {
+        "title": "用户名",
+        "width": 226,
+        "colId": "6d99146e-2634-42b3-a326-1619bb596dd1"
+    },
+    {
+        "title": "密码",
+        "width": 165,
+        "colId": "ed019936-0a7a-4a33-a1d6-991665c82ee6"
+    },
+    {
+        "title": "组织",
+        "width": 121,
+        "colId": "735e654e-1167-4341-b8e7-2b7646e43363"
+    },
+    {
+        "title": "备注",
+        "width": 88,
+        "colId": "989bf9be-282a-4e62-83b3-4f7409426a1a"
+    }
+]
