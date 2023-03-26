@@ -1,38 +1,5 @@
-<template>
-  <div class="img-clip-general-container">
-    <div class="operation-area">
-      <el-input-number v-model="scaleRate" :precision="2" :step="scaleStep" :max="500" :min="10"></el-input-number>
-      <el-button type="primary" @click="fitBtnClick">合适大小</el-button>
-      <el-button type="primary" @click="originBtnClick">原始大小</el-button>
-      <el-upload
-        :multiple="false"
-        :show-file-list="false"
-        :on-success="handleSuccess"
-        :before-upload="beforeUpload"
-        class="editor-slide-upload"
-        action="https://httpbin.org/post"
-      >
-        <el-button size="small" type="primary"> 上传图片 </el-button>
-      </el-upload>
-      <el-button-group>
-        <el-button @click="switchShowClipBox" size="small" type="primary"> 裁剪框 </el-button>
-        <el-button @click="confirmClipAction" size="small" type="primary"> 开始裁剪 </el-button>
-      </el-button-group>
-    </div>
-
-    <div class="drawing-board-container">
-      <div class="canvas-inner-container" :style="computedCanvasStyle">
-        <v-stage @mousedown="stageMousedownEvt" ref="stage" :config="stageSize">
-          <v-layer ref="layerMainImage" :config="layerConfig">
-            <v-image :config="imageMainOption" />
-            <v-rect v-if="isShowClipBox" :config="configRect" />
-          </v-layer>
-        </v-stage>
-      </div>
-    </div>
-  </div>
-</template>
-<script>
+const maxScale = 4
+const minScale = 0.4
 const canvasInitOffset = {
   x: 0,
   y: 0
@@ -41,11 +8,12 @@ export default {
   name: 'OnlinePosterHome',
   data() {
     return {
-      scaleStep: 10,
+      scaleStep: 5,
       stageSize: {
-        width: 1920,
-        height: 1080
+        width: 920,
+        height: 480
       },
+      activeLayerList: [],
       layerConfig: {
         clip: {}
       },
@@ -67,6 +35,39 @@ export default {
         draggable: true
       },
       isShowClipBox: true,
+      layerList: [
+        {
+          id: '1',
+          width: 300,
+          height: 100,
+          x: 50,
+          y: 100,
+          type: 'svg',
+          html: `
+          <svg class="online-design-svg" xmlns="http://www.w3.org/2000/svg" version="1.1">
+            <rect width="300" height="100" style="fill:white;stroke-width:1;stroke:rgb(0,0,0)" />
+          </svg>
+          `
+        },
+        {
+          id: '2',
+          width: 300,
+          height: 148,
+          x: 300,
+          y: 300,
+          type: 'img',
+          html: '<img class="online-design-img" src="https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"  />'
+        },
+        {
+          id: '3',
+          width: 140,
+          height: 48,
+          x: 200,
+          y: 300,
+          type: 'text',
+          html: '<div class="online-design-text" contenteditable="true" style="background-color:blue;">我是文本</div>'
+        }
+      ],
       imageMainOption: {
         image: null,
         draggable: true,
@@ -85,9 +86,32 @@ export default {
       const scaleRate = this.scaleRate / 100
       const { x, y } = this.canvasOffset
       return { transform: `translate(${x}px,${y}px) scale(${scaleRate})` }
+    },
+    stageStyle() {
+      const { width, height } = this.stageSize
+      return {
+        width: `${width}px`,
+        height: `${height}px`
+      }
     }
   },
   methods: {
+    getLayerItemClass(layer) {
+      let className = `layer-${layer.type}`
+      if (this.activeLayerList.map(item => item.layerId).includes(layer.id)) {
+        className += ' is-active'
+      }
+      return className
+    },
+    getLayerStyle(item) {
+      const { width, height, x, y } = item
+      return {
+        width: `${width}px`,
+        height: `${height}px`,
+        left: `${x}px`,
+        top: `${y}px`
+      }
+    },
     computedFitScale() {
       const gapSize = 80
       const drawingBoardContainer = this.$el.querySelector('.drawing-board-container')
@@ -117,20 +141,59 @@ export default {
       this.scaleRate = 100
     },
     mouseMove(e) {
+      this.x2 = e.x
+      this.y2 = e.y
+      const offsetX = this.x2 - this.x1
+      const offsetY = this.y2 - this.y1
       if (this.keyCode === 'Space') {
-        this.x2 = e.x
-        this.y2 = e.y
-        const offsetX = this.x2 - this.x1
-        const offsetY = this.y2 - this.y1
         this.canvasOffset.x += offsetX
         this.canvasOffset.y += offsetY
-        this.x1 = this.x2
-        this.y1 = this.y2
+        //   如果当前有文本图层处于编辑态，则使其失焦
+        if (this.activeLayerList.length) {
+          this.activeLayerList.forEach(({ element }) => {
+            if (element.classList.contains('layer-text')) {
+              const textEle = element.querySelector('.online-design-text')
+              if (textEle) {
+                textEle.blur()
+              }
+            }
+          })
+        }
+      } else {
+        if (this.activeLayerList.length) {
+          this.activeLayerList
+            .map(item => item.layerId)
+            .forEach(layerId => {
+              const [layerIdItem] = this.layerList.filter(item => item.id === layerId)
+              if (layerIdItem) {
+                layerIdItem.x += offsetX
+                layerIdItem.y += offsetY
+              }
+            })
+        }
       }
+      this.x1 = this.x2
+      this.y1 = this.y2
+    },
+    getLayerId(element) {
+      if (element.classList.contains('drawing-canvas')) return null
+      if (element.dataset.layerId) return { layerId: element.dataset.layerId, element }
+      else return this.getLayerId(element.parentElement)
     },
     stageMousedownEvt(e) {
-      this.x1 = this.x2 = e.evt.x
-      this.y1 = this.y2 = e.evt.y
+      if (this.keyCode !== 'Space') {
+        const layerId = this.getLayerId(e.target)
+        if (layerId) {
+          if (!this.activeLayerList.map(item => item.layerId).includes(layerId)) {
+            this.activeLayerList = []
+            this.activeLayerList.push(layerId)
+          }
+        } else {
+          this.activeLayerList = []
+        }
+      }
+      this.x1 = this.x2 = e.x
+      this.y1 = this.y2 = e.y
       window.addEventListener('mousemove', this.mouseMove)
       window.addEventListener('mouseup', () => {
         document.body.style.cursor = 'default'
@@ -138,7 +201,7 @@ export default {
       })
     },
     initCanvas() {
-      const canvasInnerContainer = document.querySelector('.canvas-inner-container')
+      const canvasInnerContainer = document.querySelector('.drawing-canvas-container')
       this.stageSize.width = canvasInnerContainer.offsetWidth
       this.stageSize.height = canvasInnerContainer.offsetHeight
     },
@@ -231,43 +294,34 @@ export default {
           document.body.style.cursor = 'default'
         }
       })
+    },
+    // 鼠标中建滚动事件回调
+    registerMousewheelEvtHandler(e) {
+      console.log(e)
+      const dy = e.wheelDeltaY || -e.deltaY
+      this.lastScaleRate = this.scaleRate
+      this.scaleRate += dy / 24
+      if (this.scaleRate / 100 > maxScale) {
+        this.scaleRate = maxScale * 100
+      }
+      if (this.scaleRate / 100 < minScale) {
+        this.scaleRate = minScale * 100
+      }
+    },
+    // 鼠标中建滚动事件注册
+    registerMousewheelEvt() {
+      document.body.addEventListener('mousewheel', this.registerMousewheelEvtHandler)
+    },
+    registerResizeEvt() {
+      window.addEventListener('resize', this.fitBtnClick)
     }
   },
   mounted() {
     this.$nextTick(this.computedFitScale)
     this.registerKeyboardEvt()
+    this.registerMousewheelEvt()
+    this.registerResizeEvt()
     // window.addEventListener('resize', this.resize)
     // window.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
   }
 }
-</script>
-<style lang="scss" scoped>
-.img-clip-general-container {
-  width: 100%;
-  height: calc(100vh - 84px);
-  display: flex;
-  flex-direction: column;
-  background-color: red;
-  .operation-area {
-    height: 60px;
-    display: flex;
-    align-items: center;
-  }
-  .drawing-board-container {
-    position: relative;
-    flex: 1;
-    background-color: green;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    overflow: hidden;
-    .canvas-inner-container {
-      width: fit-content;
-      height: fit-content;
-      background-color: pink;
-      position: absolute;
-    }
-  }
-}
-</style>
