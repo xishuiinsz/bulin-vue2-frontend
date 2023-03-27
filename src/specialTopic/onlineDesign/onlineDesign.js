@@ -85,7 +85,8 @@ export default {
     computedCanvasStyle() {
       const scaleRate = this.scaleRate / 100
       const { x, y } = this.canvasOffset
-      return { transform: `translate(${x}px,${y}px) scale(${scaleRate})` }
+      return { transform: `matrix(${scaleRate}, 0, 0, ${scaleRate}, ${x}, ${y})` }
+      // return { transform: `translate(${x}px,${y}px) scale(${scaleRate})` }
     },
     stageStyle() {
       const { width, height } = this.stageSize
@@ -200,11 +201,6 @@ export default {
         window.removeEventListener('mousemove', this.mouseMove)
       })
     },
-    initCanvas() {
-      const canvasInnerContainer = document.querySelector('.drawing-canvas-container')
-      this.stageSize.width = canvasInnerContainer.offsetWidth
-      this.stageSize.height = canvasInnerContainer.offsetHeight
-    },
     beforeUpload(file) {
       this.loadingInstance = this.$loading({
         target: this.$el
@@ -298,9 +294,9 @@ export default {
     // 鼠标中建滚动事件回调
     registerMousewheelEvtHandler(e) {
       console.log(e)
-      const dy = e.wheelDeltaY || -e.deltaY
+      const dy = -e.deltaY || e.wheelDeltaY
       this.lastScaleRate = this.scaleRate
-      this.scaleRate += dy / 24
+      this.scaleRate += dy / 20
       if (this.scaleRate / 100 > maxScale) {
         this.scaleRate = maxScale * 100
       }

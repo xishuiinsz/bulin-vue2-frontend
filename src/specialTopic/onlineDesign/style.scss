@@ -13,7 +13,7 @@
     .drawing-board-container {
         position: relative;
         flex: 1;
-        background-color: green;
+        background-color: #263445;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -23,7 +23,7 @@
         .drawing-canvas-container {
             width: fit-content;
             height: fit-content;
-            background-color: pink;
+            background-color: #fff;
             position: absolute;
 
             // transform-origin: left top;
