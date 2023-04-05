@@ -1,24 +1,26 @@
-const maxScale = 4
-const minScale = 0.4
-const canvasInitOffset = {
-  x: 0,
-  y: 0
+import WZoom from './vanilla-js-wheel-zoom/wheel-zoom'
+import { maxScale, layerList } from './utils'
+const wzoomModel = {
+  instance: null
 }
 export default {
   name: 'OnlinePosterHome',
   data() {
     return {
-      scaleStep: 5,
+      scaleStep: 0.1,
+      min: null,
+      max: 4,
+      defaultValue: 1,
+      currentScale: null,
+      step: 4,
+      value: 2,
       stageSize: {
-        width: 920,
-        height: 480
+        width: 800,
+        height: 2500
       },
       activeLayerList: [],
       layerConfig: {
         clip: {}
-      },
-      canvasOffset: {
-        ...canvasInitOffset
       },
       configClip: {
         width: 200,
@@ -35,39 +37,7 @@ export default {
         draggable: true
       },
       isShowClipBox: true,
-      layerList: [
-        {
-          id: '1',
-          width: 300,
-          height: 100,
-          x: 50,
-          y: 100,
-          type: 'svg',
-          html: `
-          <svg class="online-design-svg" xmlns="http://www.w3.org/2000/svg" version="1.1">
-            <rect width="300" height="100" style="fill:white;stroke-width:1;stroke:rgb(0,0,0)" />
-          </svg>
-          `
-        },
-        {
-          id: '2',
-          width: 300,
-          height: 148,
-          x: 300,
-          y: 300,
-          type: 'img',
-          html: '<img class="online-design-img" src="https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"  />'
-        },
-        {
-          id: '3',
-          width: 140,
-          height: 48,
-          x: 200,
-          y: 300,
-          type: 'text',
-          html: '<div class="online-design-text" contenteditable="true" style="background-color:blue;">我是文本</div>'
-        }
-      ],
+      layerList,
       imageMainOption: {
         image: null,
         draggable: true,
@@ -82,12 +52,6 @@ export default {
     }
   },
   computed: {
-    computedCanvasStyle() {
-      const scaleRate = this.scaleRate / 100
-      const { x, y } = this.canvasOffset
-      return { transform: `matrix(${scaleRate}, 0, 0, ${scaleRate}, ${x}, ${y})` }
-      // return { transform: `translate(${x}px,${y}px) scale(${scaleRate})` }
-    },
     stageStyle() {
       const { width, height } = this.stageSize
       return {
@@ -113,68 +77,19 @@ export default {
         top: `${y}px`
       }
     },
-    computedFitScale() {
-      const gapSize = 80
-      const drawingBoardContainer = this.$el.querySelector('.drawing-board-container')
-      const { width: drawingBoradWidth, height: drawingBoradHeight } = getComputedStyle(drawingBoardContainer)
-      const usableWidth = parseFloat(drawingBoradWidth) - gapSize
-      const usableHeight = parseFloat(drawingBoradHeight) - gapSize
-      const { width: canvasWidth, height: canvasHeight } = this.stageSize
-      if (canvasWidth < usableWidth && canvasHeight < usableHeight) {
-        this.scaleRate = 100
-      } else if (canvasWidth > usableWidth && canvasHeight > usableHeight) {
-        if (canvasWidth / canvasHeight > usableWidth / usableHeight) {
-          this.scaleRate = (usableWidth / canvasWidth) * 100
-        } else {
-          this.scaleRate = (usableHeight / canvasHeight) * 100
-        }
-      } else if (canvasWidth > usableWidth && canvasHeight < usableHeight) {
-        this.scaleRate = (usableWidth / canvasWidth) * 100
-      } else {
-        this.scaleRate = (usableHeight / canvasHeight) * 100
-      }
-    },
     fitBtnClick() {
-      this.canvasOffset = { ...canvasInitOffset }
-      this.computedFitScale()
+      wzoomModel.instance.prepare()
     },
     originBtnClick() {
-      this.scaleRate = 100
+      wzoomModel.instance.transform(0, 0, 1)
     },
-    mouseMove(e) {
-      this.x2 = e.x
-      this.y2 = e.y
-      const offsetX = this.x2 - this.x1
-      const offsetY = this.y2 - this.y1
-      if (this.keyCode === 'Space') {
-        this.canvasOffset.x += offsetX
-        this.canvasOffset.y += offsetY
-        //   如果当前有文本图层处于编辑态，则使其失焦
-        if (this.activeLayerList.length) {
-          this.activeLayerList.forEach(({ element }) => {
-            if (element.classList.contains('layer-text')) {
-              const textEle = element.querySelector('.online-design-text')
-              if (textEle) {
-                textEle.blur()
-              }
-            }
-          })
-        }
+    scaleChange(currentValue, oldValue) {
+      const { instance } = wzoomModel
+      if (currentValue > oldValue) {
+        instance.zoomUp()
       } else {
-        if (this.activeLayerList.length) {
-          this.activeLayerList
-            .map(item => item.layerId)
-            .forEach(layerId => {
-              const [layerIdItem] = this.layerList.filter(item => item.id === layerId)
-              if (layerIdItem) {
-                layerIdItem.x += offsetX
-                layerIdItem.y += offsetY
-              }
-            })
-        }
+        instance.zoomDown()
       }
-      this.x1 = this.x2
-      this.y1 = this.y2
     },
     getLayerId(element) {
       if (element.classList.contains('drawing-canvas')) return null
@@ -241,24 +156,6 @@ export default {
         height: 0
       }
     },
-    switchShowClipBox() {
-      if (!this.isShowClipBox) {
-        if (!this.imageMainOption.image) {
-          this.$message.error('请先上传图片！')
-          return
-        }
-        this.configRect.x = this.imageMainOption.x
-        this.configRect.y = this.imageMainOption.y
-        this.configRect.width = this.imageMainOption.width
-        this.configRect.height = this.imageMainOption.height
-      }
-      this.isShowClipBox = !this.isShowClipBox
-    },
-    lmiMouseWheelHandler(e) {
-      this.scaleRate += e.wheelDelta / 10
-      this.imageMainOption.scaleX = this.scaleRate / 100
-      this.imageMainOption.scaleY = this.scaleRate / 100
-    },
     // 开始裁剪
     confirmClipAction() {
       this.layerConfig.clip = {}
@@ -270,54 +167,57 @@ export default {
         height
       }
     },
-    // 手功调整 缩放率
-    scaleRateChangeHandler() {
-      this.imageMainOption.scaleX = this.imageMainOption.scaleY = this.scaleRate / 100
-      this.imageMainOption.x = (this.stageSize.width - this.image.width * (this.scaleRate / 100)) / 2
-      this.imageMainOption.y = (this.stageSize.height - this.image.height * (this.scaleRate / 100)) / 2
-    },
-    // 键盘事件
-    registerKeyboardEvt() {
-      window.addEventListener('keydown', e => {
-        if (e.code === 'Space') {
-          this.keyCode = 'Space'
-          document.body.style.cursor = 'grab '
+    init() {
+      const myContent = this.$el.querySelector('.drawing-canvas-container')
+      wzoomModel.instance = WZoom.create(myContent, {
+        type: 'html',
+        maxScale: maxScale,
+        width: this.stageSize.width,
+        height: this.stageSize.height,
+        zoomOnClick: false,
+        dragScrollableOptions: {
+          onGrab: () => {
+            this.$el.querySelector('.drawing-board-container').style.cursor = 'grabbing'
+          },
+          onDrop: () => {
+            this.$el.querySelector('.drawing-board-container').style.cursor = 'grab'
+          }
+        },
+        prepare: instance => {
+          this.min = instance.content.minScale
+          this.defaultValue = instance.content.minScale
+          this.max = instance.content.maxScale
+          this.step = 1 / instance.options.speed
+        },
+        rescale: instance => {
+          this.currentScale = instance.content.currentScale
         }
       })
-      window.addEventListener('keyup', e => {
-        if (e.code === 'Space') {
-          this.keyCode = ''
-          document.body.style.cursor = 'default'
-        }
+
+      // document.querySelector('[data-zoom-up]').addEventListener('click', function () {
+      //   wzoom.zoomUp()
+      // })
+
+      // document.querySelector('[data-zoom-down]').addEventListener('click', function () {
+      //   wzoom.zoomDown()
+      // })
+
+      window.addEventListener('resize', function () {
+        wzoomModel.instance.prepare()
       })
-    },
-    // 鼠标中建滚动事件回调
-    registerMousewheelEvtHandler(e) {
-      console.log(e)
-      const dy = -e.deltaY || e.wheelDeltaY
-      this.lastScaleRate = this.scaleRate
-      this.scaleRate += dy / 20
-      if (this.scaleRate / 100 > maxScale) {
-        this.scaleRate = maxScale * 100
-      }
-      if (this.scaleRate / 100 < minScale) {
-        this.scaleRate = minScale * 100
-      }
-    },
-    // 鼠标中建滚动事件注册
-    registerMousewheelEvt() {
-      document.body.addEventListener('mousewheel', this.registerMousewheelEvtHandler)
-    },
-    registerResizeEvt() {
-      window.addEventListener('resize', this.fitBtnClick)
+
+      // rangeElement.addEventListener('input', function () {
+      //   const newScale = Number(rangeElement.value)
+
+      //   if (newScale > wzoom.content.currentScale) {
+      //     wzoom.zoomUp()
+      //   } else {
+      //     wzoom.zoomDown()
+      //   }
+      // })
     }
   },
   mounted() {
-    this.$nextTick(this.computedFitScale)
-    this.registerKeyboardEvt()
-    this.registerMousewheelEvt()
-    this.registerResizeEvt()
-    // window.addEventListener('resize', this.resize)
-    // window.addEventListener('mousewheel', this.lmiMouseWheelHandler, false)
+    this.init()
   }
 }
