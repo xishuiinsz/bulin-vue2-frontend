@@ -1,5 +1,5 @@
 import UploadExcelComponent from '@/components/UploadExcel/index.vue'
-import uniqueId from 'lodash/uniqueId'
+import { getParentElementBySelector, getElementCenterPoint, getDistanceByPoints, getTransformByKey, getAngle } from './uitls'
 const selectedClassName = 'is-selected'
 export default {
   name: 'UploadExcel',
@@ -74,52 +74,31 @@ export default {
       this.tableData = results
       this.tableHeader = header
     },
-    // 左侧新增列
-    addColByLeft(item) {},
-    // 删除列
-    delCol(item) {
-      const index = this.tableHeader.findIndex(el => el === item)
-      this.tableHeader.splice(index, 1)
-      this.keyTable++
-    },
-    // 右侧新增列
-    addColByRight(item) {
-      const index = this.tableHeader.findIndex(el => el === item)
-      this.tableHeader.splice(index + 1, 0, {
-        width: 100,
-        colId: crypto.randomUUID(),
-        title: `标题${uniqueId()}`
-      })
-    },
-    rowStyle({ row, rowIndex }) {
-      return { height: '60px' }
-    },
-    // 背景色change事件
-    bgColoChange(color) {
-      console.log(color)
-    },
-    cellStyle({ row, column, rowIndex, columnIndex }) {
-      const [findedCell] = this.cellStyleList.filter(item => {
-        if (item.rowId && item.colId) {
-          return row.rowId === item.rowId && item.colId === column.columnKey
-        }
-      })
-      if (findedCell) {
-        return findedCell.style
+    rotateHandlerMousedown(e) {
+      this.tableLayer = getParentElementBySelector(e.target, 'table-layer-item')
+      if (this.tableLayer) {
+        this.pointerCenter = getElementCenterPoint(this.tableLayer)
+        const { x: xCenter, y: yCenter } = this.pointerCenter
+        this.xCenter = xCenter
+        this.yCenter = yCenter
+        this.p1 = { x: e.x - xCenter, y: e.y - yCenter }
+        document.addEventListener('mousemove', this.rotateHandlerMousemove)
+        document.addEventListener('mouseup', this.rotateHandlerMouseup)
       }
-      return {}
     },
-    cellClassName({ row, column, rowIndex, columnIndex }) {
-      const [selectedCell] = this.selectedList.filter(item => {
-        return item.rowId === row.rowId && item.colId === column.columnKey
-      })
-      if (selectedCell) {
-        return selectedClassName
-      }
-      return ''
+    rotateHandlerMousemove(e) {
+      this.p2 = { x: e.x - this.xCenter, y: e.y - this.yCenter }
+      const angel = getAngle({ x: 0, y: 0 }, this.p1, this.p2)
+      const rotateValue = getTransformByKey(this.tableLayer, 'rotate')
+      const rotate = (rotateValue ? parseFloat(rotateValue) : 0) + angel
+      this.tableLayer.style.userSelect = 'none'
+      this.tableLayer.style.transform = `rotate(${rotate}deg)`
+      this.p1 = this.p2
     },
-    rowClassName({ row, rowIndex }) {
-      return ''
+    rotateHandlerMouseup(e) {
+      this.tableLayer.style.userSelect = 'auto'
+      document.removeEventListener('mousemove', this.rotateHandlerMousemove)
+      document.removeEventListener('mouseup', this.rotateHandlerMouseup)
     }
   }
 }
